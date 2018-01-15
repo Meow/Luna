@@ -1,0 +1,73 @@
+fl ||= {}
+
+func my_func
+  print 'test'
+  print 'test'
+end
+
+func foo? print 'foo' print 'bar' end
+
+foo? unless my_func.to_s
+
+var test = do () print 'test' end
+var test2 = do (a, b, c) print a, b, c end
+
+namespace Luna
+  func test
+    print 'derp'
+  end
+
+  namespace Testy
+    func foo
+      print 'foobar'
+    end
+  end
+end
+
+namespace Luna::Testy
+  func bar
+    print 'bazbar'
+  end
+end
+
+Luna::test()
+Luna::Testy::foo()
+Luna::Testy::bar()
+
+test()
+
+my_var = 123 if fl
+my_var = 123 unless my_var is 123
+my_var = 123 if true
+
+func test(a = 'hello bitch', b = 321, c = 123)
+  if true
+    print 'test'
+
+  if a.presence
+    print 'test123'
+  
+  print 'test 2'
+end
+
+1..10.each k, v do
+  print v
+end
+
+func fl.Serialize(tab)
+  print 'You must serialize a table, not #{type(tab)}!' return '' unless tab.is_t
+
+  var success, value = pcall pon.encode, tab
+
+  if !success
+    success, value = pcall util.TableToJSON, tab
+
+    if !success
+      ErrorNoHalt "[Flux] Failed to serialize a table!\n#{value}\n"
+
+      return ""
+    end
+  end
+
+  return value
+end
