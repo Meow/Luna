@@ -97,7 +97,7 @@ function string.explode(separator, str, withpattern)
 	return ret
 end
 
-function string.Split(str, delimiter)
+function string.split(str, delimiter)
 	return string.explode(delimiter, str)
 end
 

@@ -66,6 +66,22 @@ LUA_OP_SYMBOLS = {
 	["|"] = true
 }
 
+LUA_EXPRESSION_WHITELIST = {
+	["=="] = true,
+	["+"] = true,
+	["-"] = true,
+	[">"] = true,
+	["<"] = true,
+	[">="] = true,
+	["<="] = true,
+	["/"] = true,
+	["*"] = true,
+	["%"] = true,
+	["^"] = true,
+	["&"] = true,
+	["|"] = true
+}
+
 LUA_SPECIAL = {
 	["("] = true,
 	[")"] = true,
@@ -589,8 +605,8 @@ hook.Add("Lua_Preprocess", "Luna_Preprocessor", function(code, path)
 	-- Alright we can minify this shit now...
 	returnBuffer = minify(returnBuffer) or returnBuffer
 
-	debug_print(returnBuffer)
 	debug_print("Finished processing in "..math.round(CurTime() - start_time, 4).."ms.")
+	debug_print(returnBuffer)
 
 	return returnBuffer
 end)

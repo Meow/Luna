@@ -20,11 +20,15 @@ local function is_next_statement(code, what, pos)
   return false
 end
 
-local function read_arguments(code, begin)
+local function read_arguments(code, begin, read_expressions)
   local i = begin
   local last_meaningful = ""
+  local opener = nil
   local ignore_until = nil
+  local ignore_amt = nil
   local started = false
+  local word = ""
+  local skip = 0
 
   while (true) do
     if (i >= code:len()) then break end
@@ -33,28 +37,74 @@ local function read_arguments(code, begin)
 
     i = i + 1
 
+    if (skip > 0) then
+      skip = skip - 1
+
+      continue
+    end
+
     if (ignore_until) then
+      if (ignore_amt == nil) then ignore_amt = 1 end
+
+      if (opener == v) then
+        ignore_amt = ignore_amt + 1
+
+        continue
+      end
+
       if (ignore_until == v) then
-        ignore_until = nil
+        if (ignore_amt > 0) then
+          ignore_amt = ignore_amt - 1
+        end
+
+        if (ignore_amt == 0) then
+          opener = nil
+          ignore_until = nil
+          ignore_amt = nil
+        end
+
+        last_meaningful = v
       end
 
       continue
+    end
+
+    if (read_expressions) then
+      local word = code:match("([^%s\n%(%)]+)", i)
+
+      -- We /definitely/ should stop now...
+      if (word == "then") then
+        local a = code:sub(begin, i - 1):trim():trim("\t")
+
+        if (a:trim() == "") then return false end
+
+        return a, begin, i - 1, code:sub(i - 1, i - 1)
+      end
+
+      local sp, wd = code:match("(%s*)([^%s\n%(%)%[%]]+)", i)
+
+      if (wd == "or" or wd == "and" or LUA_EXPRESSION_WHITELIST[wd]) then
+        skip = sp:len() + wd:len() + 1
+
+        continue
+      end
     end
 
     if (!started and v != "-" and LUA_OP_SYMBOLS[v]) then
       return false
     end
 
+    if (v == "=" and code:sub(i + 1, i + 1) == "=") then ignore_until = " " end
     if (v == "'" or v == "\"") then ignore_until = v end
-    if (v == "{") then ignore_until = "}" continue end
-    if (v == "(") then ignore_until = ")" continue end
-    if (v == "[") then ignore_until = "]" continue end
+    if (v == "{") then ignore_until = "}" opener = "{" continue end
+    if (v == "(") then ignore_until = ")" opener = "(" continue end
+    if (v == "[") then ignore_until = "]" opener = "[" continue end
     if (v == "\n" and last_meaningful == ",") then continue end
     if (v == "]") then continue end
     if ((last_meaningful == "," or last_meaningful == "") and (v:match("%s") or v == "\n")) then continue end
 
     -- and we finally reached the end of this shit
-    if (last_meaningful != "" and (v == "\n" or v:match("%s"))) then
+    if (last_meaningful != "" and v:match("%s") or v == "\n") then
       if (!is_next_statement(code, "=", i)) then
         local arg_list = code:sub(begin, i - 1):trim():trim("\t")
 
@@ -117,17 +167,33 @@ local function fix_brackets(code)
   -- a?
   code = code:gsub("([%w_]+)__bool([%s\n])", "%1__bool()%2")
 
+  -- a.b / AWFUL HOTFIX
+  code = code:gsub("([%w_]+)%.([%w_]+)%s+([^%z\n%s]*)", function(a, b, c)
+    if (!LUA_OP_SYMBOLS[c] and !LUA_OPERATORS[c]) then
+      if (isfunction(luna.util.FindTableVal(a.."."..b))) then
+        return a.."."..b.."()"..c
+      end
+    end
+  end)
+
+  -- ToDo: Check for variable
+  code = code:gsub("([%w_]+)%.([%w_]+)\n", function(a, b)
+    if (isfunction(luna.util.FindTableVal(a.."."..b))) then
+      return a.."."..b.."()\n"
+    end
+  end)
+
   return code
 end
 
 -- Fix missing then
 local function fix_conditions(code)
   local s, e = code:find("if")
-  
+
   while (s) do
-    local args, st, en, en_char = read_arguments(code, e + 1)
+    local args, st, en, en_char = read_arguments(code, e + 1, true)
   
-    if (args and !args:ends("then") and !is_next_statement(code, "then", en)) then
+    if (args and !args:ends("then") and !is_next_statement(code, "then", en + 1)) then
       local should_fix = true
   
       for k, v in pairs(LUA_OP_SYMBOLS) do
@@ -151,7 +217,6 @@ local function indent_blocks(code)
 
   while (s) do
     local closure = luna.util.FindLogicClosure(code, e, 2)
-
     -- Mismatched end amount
     if (closure == -1) then
       local ending = code:find("\n", e)
@@ -163,7 +228,7 @@ local function indent_blocks(code)
         end
       else
         local line = code:sub(ending + 2, code:find("\n", ending + 2))
-        local indent = line:match("([%s]+)[^%z]+") or ""
+        local indent = line:starts(luna.pp:Get("i")) and line:match("([%s]+)[^%z]+") or ""
 
         if (indent != "") then
           local line_start = code:find("\n", ending + line:len() + 2)
@@ -204,7 +269,7 @@ local function return_implicit(code)
       local line = lines[i]
 
       if (!line:find("return")) then
-        if (line:find("function")) then
+        if (line:find("function") and #lines < 2) then
           local bfr, iu = "", nil
 
           for i2 = #line, 1, -1 do
@@ -231,7 +296,7 @@ local function return_implicit(code)
           end
 
           break
-        elseif (!line:find("end")) then
+        elseif (!line:find("[^%w]end") and line != "end" and !line:find("=[^=]") and i != 1) then
           lines[i] = line:gsub("([%s]*)([^%z]+)%s*", "%1return %2")
 
           break
