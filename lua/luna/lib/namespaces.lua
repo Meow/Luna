@@ -2,13 +2,11 @@ luna.namespaces = luna.namespaces or {}
 local namespaces = {}
 
 function luna.namespaces:Resolve(code)
-  code = code:gsub("::", "__")
-
-  local s, e, t = code:find("namespace%s*([%w_]+)%s*\n")
+  local s, e, t = code:find("namespace%s*([%w_%.]+)%s*\n")
 
   while (s) do
-    local npr = t.."__"
-    namespaces[t] = npr
+    t = t:gsub("%.", "__")
+    namespaces[t] = t
 
     local closure, closure_end = luna.util.FindLogicClosure(code, e, 1)
 
@@ -19,8 +17,9 @@ function luna.namespaces:Resolve(code)
         block = self:Resolve(block)
       end
 
-      block = block:gsub("function%s*([%w_]+)", "function "..npr.."%1")
-      block = hook.Run("luna_namespace_apply", code, npr, t) or block
+      block = block:gsub("function%s*([%w_%.]+)", "function "..t.."__%1")
+      block = block:gsub("([%w_%.]+)%s*=%s*([^\n;]+)", t.."__%1 = (%2)\n")
+      block = hook.Run("luna_namespace_apply", code, t.."__", t) or block
       block = block:gsub("\n"..luna.pp:Get("i"), "\n")
 
       code = luna.pp:PatchStr(code, s, closure_end, block)
@@ -28,7 +27,11 @@ function luna.namespaces:Resolve(code)
       error("Closure not found for namespace!\n")
     end
 
-    s, e, t = code:find("namespace%s*([%w_]+)%s*\n", e)
+    s, e, t = code:find("namespace%s*([%w_%.]+)%s*\n", e)
+  end
+
+  for k, v in pairs(namespaces) do
+    code = code:gsub(v.."%.", v.."__")
   end
 
   return code

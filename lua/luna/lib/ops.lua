@@ -1,32 +1,24 @@
 luna.pp:AddProcessor("ops", function(code)
-	/*local dict = {}
+	code = code:gsub("([%w_]+)%s-%+=%s-([^\n;]+)","%1=%1+(%2)")						// +=
+	code = code:gsub("([%w_]+)%s-%-=%s-([^\n;]+)","%1=%1-(%2)") 					// -=
+	code = code:gsub("([%w_]+)%s-%*=%s-([^\n;]+)","%1=%1*(%2)") 					// *=
+	code = code:gsub("([%w_]+)%s-%/=%s-([^\n;]+)","%1=%1/(%2)") 					// /=
+	code = code:gsub("([%w_]+)%s-%%=%s-([^\n;]+)","%1=%1%%(%2)")					// %=
+	code = code:gsub("([%w_]+)%s-%^=%s-([^\n;]+)","%1=%1^(%2)") 					// ^=
+	code = code:gsub("([%w_]+)%s-and=%s-([^\n;]+)","%1=%1 and(%2)")				// and=
+	code = code:gsub("([%w_]+)%s-or=%s-([^\n;]+)","%1=%1 or(%2)")					// or=
+	code = code:gsub("([%w_]+)%s-%%.%.=%s-([^\n;]+)","%1=%1..(%2)")				// ..=
+	code = code:gsub("([%w_]+)%s-||=%s-([^\n;]+)","%1=%1||(%2)") 					// ||=
+	code = code:gsub("([%w_]+)%s-&&=%s-([^\n;]+)","%1=%1&&(%2)") 					// &&=
+	code = code:gsub("([%w_]+)%s-|=%s-([^\n;]+)","%1=bit.bor(%1,(%2))") 	// |=
+	code = code:gsub("([%w_]+)%s-&=%s-([^\n;]+)","%1=bit.band(%1,(%2))") 	// &=
+	code = code:gsub("([%w_]+)%s-&%s-([%w_]+)"," bit.band(%1,(%2))") 		// &
+	code = code:gsub("([%w_]+)%s-|%s-([%w_]+)"," bit.bor(%1,(%2))") 			// |
+	code = code:gsub("([%w_]+)%s-<<%s-([^\n;]+)"," bit.lshift(%1,(%2))") 	// <<
+	code = code:gsub("([%w_]+)%s->>%s-([^\n;]+)"," bit.rshift(%1,(%2))") 	// >>
 
-	code = code:gsub("$define%s+([%w_%d]+)%s+([^\n]+)",function(key,value) 
-		dict[key] = value
-		return ""
-	end)
-
-	for k,v in pairs(dict) do      
-		code = code:gsub("$"..k,v)
-	end*/
-
-	code = code:gsub("([%w_%d]+)%s-%+=%s-([^\n;]+)","%1=%1+(%2)") // +=
-	code = code:gsub("([%w_%d]+)%s-%-=%s-([^\n;]+)","%1=%1-(%2)") // -=
-	code = code:gsub("([%w_%d]+)%s-%*=%s-([^\n;]+)","%1=%1*(%2)") // *=
-	code = code:gsub("([%w_%d]+)%s-%/=%s-([^\n;]+)","%1=%1/(%2)") // /=
-	code = code:gsub("([%w_%d]+)%s-%%=%s-([^\n;]+)","%1=%1%%(%2)")// %=
-	code = code:gsub("([%w_%d]+)%s-%^=%s-([^\n;]+)","%1=%1^(%2)") // ^=
-	code = code:gsub("([%w_%d]+)%s-%and=%s-([^\n;]+)","%1=%1 and(%2)") // and=
-	code = code:gsub("([%w_%d]+)%s-%or=%s-([^\n;]+)","%1=%1 or(%2)") // or=
-	code = code:gsub("([%w_%d]+)%s-||=%s-([^\n;]+)","%1=%1||(%2)")// ||=
-	code = code:gsub("([%w_%d]+)%s-&&=%s-([^\n;]+)","%1=%1&&(%2)")// &&=
-	code = code:gsub("([%w_%d]+)%s-%|=%s-([^\n;]+)","%1=bit.bor(%1,%2)") // |=
-	code = code:gsub("([%w_%d]+)%s-%&=%s-([^\n;]+)","%1=bit.band(%1,%2)") // &=
-
-	/*code = code:gsub("%+%+([%w_%d]+)","(function() %1=%1+1 return %1 end)()") // ++a
-	code = code:gsub("([%w_%d]+)%+%+","(function() %1=%1+1 return %1-1 end)()")//a++
-	code = code:gsub("%-%-([%w_%d]+)","(function() %1=%1-1 return %1 end)()")//  --a
-	code = code:gsub("([%w_%d]+)%-%-","(function() %1=%1-1 return %1-1 end)()")//a--*/
+	code = code:gsub("%+%+([%w_]+)","(function() %1=%1+1 return %1 end)()") // ++a
+	code = code:gsub("([%w_]+)%+%+","(function() %1=%1+1 return %1-1 end)()")//a++
 
 	/*code = code:gsub("using%s+([%w_%d%.]+)",function(lib) //using library/function 
 		local name = string.Explode(".",lib)

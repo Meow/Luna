@@ -13,6 +13,8 @@ var test = do () print 'test' end
 var test2 = do (a, b, c) print a, b, c end
 
 namespace Luna
+  something = 'test'
+
   func test
     print 'derp'
   end
@@ -24,15 +26,18 @@ namespace Luna
   end
 end
 
-namespace Luna::Testy
+namespace Luna.Testy
   func bar
     print 'bazbar'
   end
 end
 
-Luna::test()
-Luna::Testy::foo()
-Luna::Testy::bar()
+print Luna.something
+
+
+Luna.test()
+Luna.Testy.foo()
+Luna.Testy.bar()
 
 test()
 
@@ -50,7 +55,7 @@ func test(a = 'hello bitch', b = 321, c = 123)
   print 'test 2'
 end
 
-1..10.each k, v do
+1..10.each_i k, v do
   print v
 end
 
@@ -69,5 +74,5 @@ func fl.Serialize(tab)
     end
   end
 
-  return value
+  value
 end

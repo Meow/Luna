@@ -1,5 +1,5 @@
 luna.pp:AddProcessor("pretty_logic", function(code)
-  code = code:gsub("\n([%s]-)([^\n]+)%sif%s?([^\n]+)\n", function(a, b, c)
+  code = code:gsub("\n([%s]*)([^\n]+)%sif%s?([^\n]+)\n", function(a, b, c)
     b = b:trim()
     c = c:trim()
 
@@ -8,7 +8,7 @@ luna.pp:AddProcessor("pretty_logic", function(code)
     end
   end)
 
-  code = code:gsub("\n([%s]-)([^%z\n]+)%sunless%s?([^%z\n]+)\n", function(a, b, c)
+  code = code:gsub("\n([%s]*)([^%z\n]+)%sunless%s?([^%z\n]+)\n", function(a, b, c)
     b = b:trim()
     c = c:trim()
 

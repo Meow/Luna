@@ -74,7 +74,7 @@ local function read_arguments(code, begin)
 end
 
 local blocked_arg_strings = {
-  "end", "then", "in", "pairs"
+  "end", "then", "in", "pairs", "pairs(", "ipairs", "ipairs("
 }
 
 local function fix_bracket_argumented_call(code, bracket_start)
@@ -82,7 +82,7 @@ local function fix_bracket_argumented_call(code, bracket_start)
 
   if (arg_str) then
     for k, v in ipairs(blocked_arg_strings) do
-      if (arg_str:find(v)) then
+      if (arg_str:find("[^%w]?"..string.pattern_safe(v).."[^%w]") or arg_str == v) then
         return code
       end
     end
