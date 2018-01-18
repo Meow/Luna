@@ -1,4 +1,4 @@
-local function is_next_statement(code, what, pos)
+function is_next_statement(code, what, pos)
   local i = pos
 
   while (true) do
@@ -20,7 +20,7 @@ local function is_next_statement(code, what, pos)
   return false
 end
 
-local function read_arguments(code, begin, read_expressions)
+function read_arguments(code, begin, read_expressions, read_special)
   local i = begin
   local last_meaningful = ""
   local opener = nil
@@ -90,6 +90,40 @@ local function read_arguments(code, begin, read_expressions)
       end
     end
 
+    local comma, sp, word = code:match("([,]?)(%s*)([^%s\n%(%)%[%]]+)", i)
+
+    -- functions as args
+    if (word == "function") then
+      local context_end, real_end = luna.util.FindLogicClosure(code, i, 0)
+
+      if (context_end) then
+        if (comma == ",") then
+          skip = code:sub(i, real_end):len() - 1
+
+          continue
+        elseif (read_special) then -- yielded blocks
+          return code:sub(begin, real_end), begin, real_end, code:sub(real_end, real_end)
+        end
+      end
+    end
+
+    if (read_special) then
+      local eol = code:find("\n", i)
+      local line = code:sub(i, code:find("\n", i))
+      local s, e, name, val, ending = line:find("([%w_]+):%s*([^,\n]+)([\n,])")
+
+      if (s) then
+        skip = e - 1
+
+        if (ending == "\n") then
+          local end_pos = i + e - 2
+          return code:sub(begin, end_pos), begin, end_pos, code:sub(end_pos, end_pos)
+        end
+
+        continue
+      end
+    end
+
     if (!started and v != "-" and LUA_OP_SYMBOLS[v]) then
       return false
     end
@@ -144,6 +178,22 @@ local function fix_bracket_argumented_call(code, bracket_start)
   return code
 end
 
+local function is_str_function(str, parent)
+  local obj = luna.util.FindTableVal(str, parent)
+
+  if (isfunction(obj) or (istable(obj) and obj.is_func)) then
+    return true
+  elseif (!parent or parent == _G) then
+    obj = _GLOBALS[str]
+
+    if (istable(obj) and obj.type == "function") then
+      return true
+    end
+  end
+
+  return false
+end
+
 -- Fix missing parentheses on function calls.
 local function fix_brackets(code)
   -- a:b
@@ -170,7 +220,7 @@ local function fix_brackets(code)
   -- a.b / AWFUL HOTFIX
   code = code:gsub("([%w_]+)%.([%w_]+)%s+([^%z\n%s]*)", function(a, b, c)
     if (!LUA_OP_SYMBOLS[c] and !LUA_OPERATORS[c]) then
-      if (isfunction(luna.util.FindTableVal(a.."."..b))) then
+      if (is_str_function(a.."."..b)) then
         return a.."."..b.."()"..c
       end
     end
@@ -178,7 +228,7 @@ local function fix_brackets(code)
 
   -- ToDo: Check for variable
   code = code:gsub("([%w_]+)%.([%w_]+)\n", function(a, b)
-    if (isfunction(luna.util.FindTableVal(a.."."..b))) then
+    if (is_str_function(a.."."..b)) then
       return a.."."..b.."()\n"
     end
   end)
@@ -331,7 +381,13 @@ luna.pp:AddProcessor("logic", function(code)
   code = fix_conditions(code)
   code = indent_blocks(code)
 
-  code = hook.Run("luna_compiler_logic_fixed", code) or code
+  local cobj = {code = code, set = function(self, new)
+    self.code = new or self.code
+  end}
+
+  hook.Call("luna_compiler_logic_fixed", cobj)
+
+  code = cobj.code
 
   code = fix_brackets(code)
   _CONTEXTS = luna.pp:GetContexts(code)

@@ -1,0 +1,189 @@
+fl ||= {}
+
+func my_func
+  print 'test'
+  print 'test'
+end
+
+func foo? print 'foo' print 'bar' end
+
+foo? unless my_func.to_s
+
+var test = do () print 'test' end
+var test2 = do (a, b, c) print a, b, c end
+
+namespace Luna
+  something = 'test'
+
+  func test
+    print 'derp'
+  end
+
+  namespace Testy
+    func foo
+      print 'foobar'
+    end
+  end
+end
+
+namespace Luna.Testy
+  func bar
+    print 'bazbar'
+  end
+end
+
+print Luna.something
+
+
+Luna.test()
+Luna.Testy.foo()
+Luna.Testy.bar()
+
+test()
+
+my_var = 123 if fl
+my_var = 123 unless my_var is 123
+my_var = 123 if true
+
+func test(a = 'hello bitch', b = 321, c = 123)
+  if true
+    print 'test'
+
+  if a.presence
+    print 'test123'
+  
+  print 'test 2'
+end
+
+1..10.each_i k, v do
+  print v
+end
+
+netstream ||= {}
+
+var stored = netstream.stored or {}
+netstream.stored = stored
+
+var cache = netstream.cache or {}
+netstream.cache = cache
+
+-- A func to split data for a data stream.
+func netstream.split(data)
+  var result = {}
+  var buffer = {}
+
+  for i = 0, #data do
+    table.insert buffer, string.sub(data, i, i)
+
+    if #buffer == 32768
+      table.insert result, table.concat(buffer)
+      buffer = {}
+    end
+  end
+
+  table.insert result, table.concat(buffer)
+
+  result
+end
+
+-- A func to hook a net stream.
+func netstream.hook(name, callback)
+  stored[name] = callback
+end
+
+if SERVER
+  util.AddNetworkString 'NetStreamDS'
+
+  -- A func to start a net stream.
+  func netstream.Start(player = _player.GetAll, name, ...)
+    var recipients = {}
+    var bShouldSend = false
+
+    player = {player} unless player.is_t
+
+    player.each_i k, v do
+      if v.is_a? player
+        table.insert recipients, v
+
+        bShouldSend = true
+      end
+    end
+
+    var encodedData = pon.encode {...}
+
+    if encodedData and #encodedData > 0 and bShouldSend
+      net.Start 'NetStreamDS'
+        net.WriteString name
+        net.WriteUInt #encodedData, 32
+        net.WriteData encodedData, #encodedData
+      net.Send recipients
+    end
+  end
+
+  net.Receive('NetStreamDS', do (length, player)
+    var NS_DS_NAME = net.ReadString
+    var NS_DS_LENGTH = net.ReadUInt 32
+    var NS_DS_DATA = net.ReadData NS_DS_LENGTH
+
+    if NS_DS_NAME and NS_DS_DATA and NS_DS_LENGTH
+      player.nsDataStreamName = NS_DS_NAME
+      player.nsDataStreamData = ''
+
+      if player.nsDataStreamName and player.nsDataStreamData
+        player.nsDataStreamData = NS_DS_DATA
+
+        if stored[player.nsDataStreamName]
+          var bStatus, value = pcall pon.decode, player.nsDataStreamData
+
+          if bStatus
+            stored[player.nsDataStreamName](player, unpack(value))
+          else
+            ErrorNoHalt 'NetStream: "#{NS_DS_NAME}"\n#{value}\n'
+          end
+        end
+
+        player.nsDataStreamName = nil
+        player.nsDataStreamData = nil
+      end
+    end
+
+    NS_DS_NAME, NS_DS_DATA, NS_DS_LENGTH = nil, nil, nil
+  end)
+else
+  net ||= {}
+  func net.Receive
+  end
+
+  -- A func to start a net stream.
+  func netstream.Start(name, ...)
+    var encodedData = pon.encode {...}
+
+    if encodedData and #encodedData > 0
+      net.Start 'NetStreamDS'
+        net.WriteString name
+        net.WriteUInt #encodedData, 32
+        net.WriteData encodedData, #encodedData
+      net.SendToServer
+    end
+  end
+
+  net.Receive('NetStreamDS', do (length)
+    var NS_DS_NAME = net.ReadString
+    var NS_DS_LENGTH = net.ReadUInt 32
+    var NS_DS_DATA = net.ReadData NS_DS_LENGTH
+
+    if NS_DS_NAME and NS_DS_DATA and NS_DS_LENGTH
+      if stored[NS_DS_NAME]
+        var bStatus, value = pcall pon.decode, NS_DS_DATA
+
+        if bStatus
+          stored[NS_DS_NAME](unpack(value))
+        else
+          ErrorNoHalt('NetStream: "#{NS_DS_NAME}"\n#{value}\n')
+        end
+      end
+    end
+
+    NS_DS_NAME, NS_DS_DATA, NS_DS_LENGTH = nil, nil, nil
+  end)
+end

@@ -1,5 +1,5 @@
 -- Hooks system.
-hook = hook or {};
+hook = hook or {}
 
 local stored = hook.stored or {}
 hook.stored = stored

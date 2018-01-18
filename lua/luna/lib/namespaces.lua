@@ -37,6 +37,6 @@ function luna.namespaces:Resolve(code)
   return code
 end
 
-hook.Add("luna_compiler_logic_fixed", "luna_namespacing", function(code)
-  return luna.namespaces:Resolve(code)
+hook.Add("luna_compiler_logic_fixed", "luna_namespacing", function(obj)
+  obj:set(luna.namespaces:Resolve(obj.code))
 end)

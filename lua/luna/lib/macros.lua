@@ -39,5 +39,5 @@ luna.pp:AddProcessor("macros", function(code)
 
 	code = restore_strings(code)
 
-	luna.pp:Commit(code)
+	return code
 end)

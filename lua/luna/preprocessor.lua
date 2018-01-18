@@ -6,10 +6,10 @@
 
 -- Globals used during processing
 _SCOPE = {}
-_FUNCTIONS = {}
+_GLOBALS = {}
 _LOCALS = {}
-_STRINGS = {}
 _CONTEXTS = {}
+CURRENT_PATH = "unknown"
 
 CONTEXT_OPENERS = {
 	["function"] = true,
@@ -145,18 +145,6 @@ function luna.pp:Get(what)
 	end
 end
 
-function luna.pp:Commit(code)
-	returnBuffer = code
-
-	offset = returnBuffer:len() - origCode:len()
-end
-
-function luna.pp:Patch(start, endpos, replacement)
-	returnBuffer = (start > 1 and returnBuffer:sub(1, start - 1) or "")..replacement..returnBuffer:sub(endpos + 1, returnBuffer:len())
-
-	offset = returnBuffer:len() - origCode:len()
-end
-
 function luna.pp:PatchStr(str, start, endpos, replacement)
 	return (start > 1 and str:sub(1, start - 1) or "")..replacement..str:sub(endpos + 1, str:len())
 end
@@ -173,24 +161,6 @@ function luna.pp:RemoveProcessor(uniqueID)
 			break
 		end
 	end
-end
-
-local _instr_cache = {}
-
-function luna.pp:InString(pos)
-	if (_instr_cache[pos]) then
-		return true, _instr_cache[pos]
-	end
-
-	for k, v in ipairs(_STRINGS) do
-		if (v[2] >= pos and v[3] <= pos) then
-			_instr_cache[pos] = v
-
-			return true, v
-		end
-	end
-
-	return false
 end
 
 function luna.pp:Hit(str, what, start, negate)
@@ -294,26 +264,6 @@ function luna.pp:ExtractLocals(str)
 	return ret
 end
 
--- Pass a function body to this
--- this will extract the FIRST function's arguments.
-function luna.pp:ExtractFunctionArgs(str)
-	local ret = {}
-
-	local a, b, c = str:find("function%s[%w_]+%(?%s-([^%)\n]*)%s-[%)\n]?")
-
-	if (a and b and c) then
-		if (c:find(",")) then
-			c = c:trim():gsub(", ", ","):gsub(" ,", ",")
-
-			ret = string.explode(",", c)
-		elseif (c != "") then
-			ret = {c}
-		end
-	end
-
-	return ret
-end
-
 function luna.pp:GetContext(pos, context)
 	local lx, ly = 0, 0
 	local littlest = nil
@@ -405,7 +355,7 @@ ERROR_CRITICAL = 1
 ERROR_DEPRECATION = 2
 ERROR_UNCLEAR = 3
 
-function compile_error(msg, offset, type)
+function parser_error(msg, offset, type)
 	local err = {
 		msg = msg,
 		offset = offset,
@@ -419,6 +369,132 @@ function compile_error(msg, offset, type)
 	end
 end
 
+hook.Add("luna_compiler_logic_fixed", "luna_read_globals", function(obj)
+	local code = obj.code
+	-- First read the functions
+	local s, e = code:find("function")
+	local contexts = {check = function(self, p)
+		for k, v in ipairs(self) do
+			if (p >= v[1] and p <= v[2]) then
+				return _GLOBALS[v[3]]
+			end
+		end
+
+		return false
+	end}
+
+	while (s) do
+		local context_end, real_end = luna.util.FindLogicClosure(code, e, 1)
+
+		if (context_end) then
+			local info = {
+				type = "function",
+				is_func = true,
+				luna = true,
+				context_start = s,
+				context_end = real_end,
+				path = CURRENT_PATH,
+				splattable = false,
+				yieldable = false
+			}
+
+			local block = code:sub(s, context_end)
+			local st, ed, fn = block:find("function%s-([^%(%s]+)")
+
+			info.name = fn
+
+			-- Anonymous function
+			if (!st) then
+				s, e = code:find("function", real_end)
+				continue
+			end
+
+			if (block:sub(ed + 1, block:find("\n", ed)):find("[%(%)]")) then
+				info.args_str = read_arguments(block, ed + 1)
+				info.args_amt = #info.args_str:split(",")
+
+				if (info.args_str:find("%*[%w_%.:]")) then
+					info.splattable = true
+				end
+			end
+
+			if (block:find("[%s\n]yield")) then
+				info.yieldable = true
+			end
+
+			hook.Run("luna_adjust_function_info", info, block, code)
+
+			table.insert(contexts, {s, real_end, fn})
+
+			_GLOBALS[fn] = info
+		else
+			parser_error("'end' expected to close function!", s, ERROR_CRITICAL)
+			break
+		end
+
+		s, e = code:find("function", real_end)
+	end
+
+	local s, e, name = code:find("\n%s*([%w_%.]+)%s*=")
+
+	while (s) do
+		if (!contexts:check(s)) then
+			local info = {
+				type = "variable",
+				name = name,
+				def_start = s,
+				def_end = e,
+				path = CURRENT_PATH,
+				luna = true,
+				is_func = false
+			}
+
+			local remain = code:sub(e, code:find("\n", e))
+			local func_start, func_end = remain:find("function")
+
+			if (func_start) then
+				info.type = "function"
+				info.is_func = true
+				
+				local context_end, real_end = luna.util.FindLogicClosure(code, e, 0)
+
+				if (context_end) then
+					local block = code:sub(s, real_end)
+		
+					info.context_start = s
+					info.context_end = real_end
+
+					if (block:sub(func_end + 1, block:find("\n", func_end)):find("[%(%)]")) then
+						info.args_str = read_arguments(block, func_end + 1)
+						info.args_amt = #info.args_str:split(",")
+
+						if (info.args_str:find("%*[%w_%.:]")) then
+							info.splattable = true
+						end
+					end
+
+					if (block:find("[%s\n]yield")) then
+						info.yieldable = true
+					end
+
+					hook.Run("luna_adjust_function_info", info, block, code)
+
+					table.insert(contexts, {s, real_end, name})
+				else
+					parser_error("'end' expected to close function!", func_start, ERROR_CRITICAL)
+					break
+				end
+			end
+
+			_GLOBALS[name] = info
+		end
+
+		s, e, name = code:find("\n%s*([%w_%.]+)%s*=", e)
+	end
+
+	hook.Run("luna_globals_info_gathered", obj)
+end)
+
 include("lib/minifier.lua")
 include("lib/macros.lua")
 include("lib/define.lua")
@@ -428,6 +504,7 @@ include("lib/special_funcs.lua")
 include("lib/default_args.lua")
 include("lib/namespaces.lua")
 include("lib/ops.lua")
+include("lib/splat_yield.lua")
 include("lib/logic.lua")
 include("lib/str_interp.lua")
 
@@ -558,6 +635,8 @@ hook.Add("Lua_Preprocess", "Luna_Preprocessor", function(code, path)
 		return code
 	end
 
+	CURRENT_PATH = path
+
 	-- Print before starting the benchmark so that we don't
 	-- get screwed by stdio.
 	debug_print("Pre-Processing Luna source...")
@@ -571,9 +650,6 @@ hook.Add("Lua_Preprocess", "Luna_Preprocessor", function(code, path)
 	-- so that we can simply not bother about them...
 	returnBuffer = strip_comments(returnBuffer) or returnBuffer
 
-	-- Extract all strings
-	_STRINGS = get_all_strings(returnBuffer)
-
 	-- Reset in string buffer cache so that it returns the correct results.
 	_instr_cache = {}
 
@@ -583,7 +659,7 @@ hook.Add("Lua_Preprocess", "Luna_Preprocessor", function(code, path)
 
 	indent = analyzeIndentation(returnBuffer)
 
-	debug_print("Indentation identified as: "..(indent != "\t" and indent:len().." spaces" or "a tab"))
+	debug_print("Indentation identified as: "..(indent != "\t" and indent:len().." space"..(indent:len() > 1 and "s" or "") or "a tab"))
 	debug_print("Running processors...")
 
 	for k, v in ipairs(processors) do
@@ -592,14 +668,20 @@ hook.Add("Lua_Preprocess", "Luna_Preprocessor", function(code, path)
 			local err = errors[#errors]
 
 			ErrorNoHalt("[ERROR] Critical compilation error occured!\n")
-			ErrorNoHalt(tostring(err.msg))
+			ErrorNoHalt(tostring(err.msg).."\n")
 
 			return code
 		end
 
 		debug_print("Running processor: "..v[1])
 
-		returnBuffer = v[2](returnBuffer) or returnBuffer
+		local success, value = pcall(v[2], returnBuffer)
+
+		if (success) then
+			returnBuffer = value or returnBuffer
+		else
+			parser_error(value, -1, ERROR_CRITICAL)
+		end
 	end
 
 	-- Alright we can minify this shit now...
