@@ -495,6 +495,7 @@ hook.Add("luna_compiler_logic_fixed", "luna_read_globals", function(obj)
 	hook.Run("luna_globals_info_gathered", obj)
 end)
 
+include("helpers.lua")
 include("lib/minifier.lua")
 include("lib/macros.lua")
 include("lib/define.lua")

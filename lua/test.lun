@@ -1,12 +1,8 @@
-func foo(a, *args, b)
-  print a
-  print b
+func foo(*args, a)
   print args.test
-  print args.test_two
-  yield
 end
 
-foo 'This is A', test: 'hey', 1, 2, 3, 'This is B', test_two: 'hey hey'
+foo 'a', 'b', 'c', 'd', test: 1
 
 test or= {}
 

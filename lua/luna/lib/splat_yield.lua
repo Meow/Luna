@@ -19,6 +19,9 @@ local function parse_splat(code, obj)
       ending = ending - 1
     end
 
+    obj.start_args = 0
+    obj.end_args = 0
+
     -- beginning of arg list
     if (block:match("%(%s*%*")) then
       obj.splat_pos = 0
@@ -27,7 +30,7 @@ local function parse_splat(code, obj)
       obj.splat_pos = 1
 
       local before, after = block:sub(block:find("%(") + 1, block:find(",%s*%*[%w_]+%s*,") - 1),
-                            block:sub(block:find(",%s*%*[%w_]+%s*,") + 1, block:find("%)") - 1)
+                            block:sub(select(2, block:find(",%s*%*[%w_]+%s*,")) + 1, block:find("%)") - 1)
 
       obj.start_args = #before:split(",")
       obj.end_args = #after:split(",")
@@ -36,7 +39,9 @@ local function parse_splat(code, obj)
       obj.start_args = #(block:sub(1, block:find("%)") - 1):split(",") or {}) - 1
     end
 
-    block = luna.pp:PatchStr(block, arg_end, arg_end, (obj.splat_pos != 2 and "," or "")..arg..")")
+    local max_args = math.max(obj.start_args, obj.end_args)
+
+    block = luna.pp:PatchStr(block, arg_end, arg_end, ((max_args > 0 and obj.splat_pos != 2) and "," or "")..arg..")")
     block = luna.pp:PatchStr(block, s, ending, "")
     code = luna.pp:PatchStr(code, obj.context_start, obj.context_end, block)
   end
@@ -58,12 +63,21 @@ local function process_splat(code, obj)
 
     if (args) then
       local splat = "{"
+      local s, e, name = args:find("([%w_]+):%s*")
 
-      args = args:gsub("([%w_]+):%s*([^,\n]+)", function(name, value, ending)
-        splat = splat.."['"..name.."'] = "..value..","
+      while (s) do
+        local arg, st, en, enc = read_argument(args, e)
+        local value = (isstring(arg) and arg) or "nil"
 
-        return ""
-      end)
+        if (arg) then
+          splat = splat.."['"..name.."'] = "..value..","
+          args = luna.pp:PatchStr(args, s, en, "")
+        else
+          args = luna.pp:PatchStr(args, s, e, "")
+        end
+  
+        s, e, name = args:find("([%w_]+):%s*", en)
+      end
 
       args = args:gsub(",[%s]*", ",")
 
@@ -77,15 +91,34 @@ local function process_splat(code, obj)
       local i = 0
 
       for k, v in ipairs(exploded) do
-        if (!v:find(":")) then
+        if (v == "" or v == " ") then
+          table.remove(exploded, k)
+        end
+      end
+
+      for k, v in ipairs(exploded) do
+        if (v != "" and v != " " and !v:find(":")) then
           if (rs > 0) then
             table.insert(_rs, v)
             rs = rs - 1
-          elseif (re > 0 and re <= (#exploded - k)) then
+          elseif (re >= 0 and re <= (#exploded - k)) then
             table.insert(_spt, v)  
           else
             table.insert(_re, v)
+            re = re - 1
           end
+        end
+      end
+
+      while (rs > 0 or re > 0) do
+        if (rs > 0) then
+          table.insert(_rs, 'nil')
+          rs = rs - 1
+        end
+
+        if (re > 0) then
+          table.insert(_re, 'nil')
+          re = re - 1
         end
       end
 
@@ -95,7 +128,10 @@ local function process_splat(code, obj)
       local new_args = table.concat(_rs, ",")..
         (#_re > 0 and "," or "")..
         table.concat(_re, ",")..
+        ((#_re > 0 or #_rs > 0) and "," or "")..
         splat
+
+      new_args = " "..new_args:trim(",").." "
 
       code = luna.pp:PatchStr(code, start, end_pos, new_args)
     end
