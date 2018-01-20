@@ -34,9 +34,9 @@ Also the ```++``` operator. ```--``` was not implemented due to overlapping Lua'
 ### Operator aliases
 The following tokens were aliased:
 ```
-function   -> func
-elseif     -> elif, elsif
-local      -> var
+func       -> function
+elif/elsif -> elseif
+var        -> local
 yes/no     -> true/false
 is         -> ==
 is not     -> !=
