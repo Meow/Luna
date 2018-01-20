@@ -685,7 +685,7 @@ hook.Add("Lua_Preprocess", "Luna_Preprocessor", function(code, path)
 		end
 	end
 
-	-- Alright we can minify this shit now...
+	-- Alright we can minify this damned thing now...
 	returnBuffer = minify(returnBuffer) or returnBuffer
 
 	debug_print("Finished processing in "..math.round(CurTime() - start_time, 4).."ms.")

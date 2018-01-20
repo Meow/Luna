@@ -127,7 +127,7 @@ local function condFix(code, pos, word)
 	end
 
 	-- Check for 'end'
-	local closepos, dicks = luna.util.FindLogicClosure(code, pos, 2)
+	local closepos, _ = luna.util.FindLogicClosure(code, pos, 2)
 
 	-- Closure not found!
 	-- Use indentation to fix it.
@@ -176,7 +176,7 @@ local function funcFix(code, pos, buf)
 	-- be any operators immediately after the name.
 	local eol = code:find("\n", pos)
 
-	-- Just wrap the shit in brackets, it's end of file, no one will notice, hehe.
+	-- Just wrap the stuff in brackets, it's end of file, no one will notice, hehe.
 	if (!eol) then
 		return code.."("..(code:len() != pos and code:sub(pos, code:len()) or "")..")"
 	end

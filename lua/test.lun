@@ -1,8 +1,8 @@
-func foo(*args, a)
+func foo(b, *args)
   print args.test
 end
 
-foo 'a', 'b', 'c', 'd', test: 1
+foo test: 'hello world ish maybe'
 
 test or= {}
 

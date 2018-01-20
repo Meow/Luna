@@ -219,7 +219,7 @@ function read_arguments(code, begin, read_expressions, read_special)
     if (v == "]") then continue end
     if ((last_meaningful == "," or last_meaningful == "") and (v:match("%s") or v == "\n")) then continue end
 
-    -- and we finally reached the end of this shit
+    -- and we finally reached the end of this thing
     if (last_meaningful != "" and v:match("%s") or v == "\n") then
       if (!is_next_statement(code, "=", i)) then
         local arg_list = code:sub(begin, i - 1):trim():trim("\t")
