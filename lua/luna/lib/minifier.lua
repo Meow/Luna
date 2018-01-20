@@ -2,15 +2,15 @@ luna.minifier = luna.minifier or {}
 
 -- Because if we replace those then we can spare some extra spaces
 local replaceable = {
-  ["or"] = "||",
-  ["and"] = "&&",
+  ["([^%w])or([^%w])"] = "%1||%2",
+  ["([^%w])and([^%w])"] = "%1&&%2",
   ["\n"] = " ",
   ["\t"] = " ",
   ["%.%."] = "+",
   ["%.%+"] = "...", ["%+%."] = "...",
-  ["not "] = "!",
-  ["false"] = "!0",
-  ["true"] = "!!0"
+  ["([^%w])not "] = "%1!",
+  ["([^%w])false([^%w])"] = "%1!0%2",
+  ["([^%w])true([^%w])"] = "%1!!0%2"
 }
 
 -- All minifiable operators that shouldn't have leading or trailing spaces.

@@ -10,3 +10,5 @@ namespace Test
   func foo
   end
 end
+
+include 'netstream.lun'

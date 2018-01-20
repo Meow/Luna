@@ -25,7 +25,9 @@ end
 
 luna.pp:AddProcessor("special_funcs", function(code)
 	-- a.is_a? b
-	code = code:gsub("([%w%d_'\"%?]+)%.is_a%?%s-([%w%d_]+)", "(string.lower(type(%1)) == string.lower('%2'))")
+	code = code:gsub("([%w%d_'\"%?]+)%.is_a%?%s-([%w%d_]+)", function(a, b)
+		return "(string.lower(type("..a.."))==\""..string.lower(b).."\")"
+	end)
 
 	for k, v in pairs(special_funcs) do
 		code = code:gsub("([%w%d_'\"%?]+)%."..string.pattern_safe(k).."([^%w])", v)

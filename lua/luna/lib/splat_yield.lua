@@ -150,14 +150,14 @@ hook.Add("luna_globals_info_gathered", "luna_splat_yield", function(obj)
       if (v.path == CURRENT_PATH) then
         if (v.splattable) then
           code = parse_splat(code, v) or code
+          code = process_splat(code, v) or code
         end
 
         if (v.yieldable) then
           code = parse_yield(code, v) or code
+          code = process_yield(code, v) or code
         end
       end
-
-      code = process_splat(code, v) or code
     end
   end
 
