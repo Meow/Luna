@@ -15,7 +15,7 @@ luna.pp:AddProcessor("switch", function(code)
 
           return "if ("..cond.." == "..a..") then"
         else
-          return "elseif "..cond.." == "..a.." then"
+          return "elseif ("..cond.." == "..a..") then"
         end
       end)
 
