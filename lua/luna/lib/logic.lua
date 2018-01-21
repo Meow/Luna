@@ -104,10 +104,11 @@ end
 
 -- Indentantion blocks (end-less logical blocks)
 local function indent_blocks(code)
-  local s, e = code:find("if[^%z]-then")
+  local s, e, spaces = code:find("([^\n%S]*)if[^%z]-then")
 
   while (s) do
-    local closure = luna.util.FindLogicClosure(code, e, 2)
+    local closure = luna.util.FindLogicClosure(code, e, (spaces:len() > 0 and 2 or 1))
+
     -- Mismatched end amount
     if (closure == -1) then
       local ending = code:find("\n", e)

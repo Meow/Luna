@@ -286,9 +286,24 @@
     <!-- Control keywords -->
     <dict>
       <key>match</key>
-      <string>\b(break|do|else|for|if|unless|is|is%snot|elseif|elif|elsif|return|then|repeat|while|until|end|function|namespace|class|var|const|public|private|protected|let|local|in|continue|goto|or=|and=)\b</string>
+      <string>\b(break|do|else|for|if|switch|case|unless|is|is%snot|elseif|elif|elsif|return|then|repeat|while|until|end|function|namespace|class|var|const|public|private|protected|let|local|in|continue|goto|or=|and=)\b</string>
       <key>name</key>
       <string>keyword.control.luna</string>
+    </dict>
+    <!-- Splat arguments -->
+    <dict>
+      <key>captures</key>
+      <dict>
+        <key>1</key>
+        <dict>
+          <key>name</key>
+          <string>keyword.other.luna</string>
+        </dict>
+      </dict>
+      <key>match</key>
+      <string>\b([\w_\.]+):[^\w_]</string>
+      <key>name</key>
+      <string>keyword.other.luna</string>
     </dict>
     <!-- Important constants -->
     <dict>

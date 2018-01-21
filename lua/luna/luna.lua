@@ -47,7 +47,7 @@ function luna.util.FindLogicClosure(str, pos, opnd)
         end
 
         -- we've found the closure for the current block, bail out!
-        if (open == 0) then return i, i + 2 end
+        if (open <= 0) then return i, i + 2 end
     end
 
     return -1

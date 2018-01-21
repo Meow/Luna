@@ -1,3 +1,12 @@
+var test_var = 'help'
+
+switch test_var
+  case 'help'
+    print 'test test'
+  else
+    print 'not test test'
+end
+
 func foo(b, *args)
   print args.test
 end
@@ -10,5 +19,3 @@ namespace Test
   func foo
   end
 end
-
-include 'netstream.lun'
