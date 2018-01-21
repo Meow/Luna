@@ -294,7 +294,7 @@
     <dict>
       <key>captures</key>
       <dict>
-        <key>1</key>
+        <key>0</key>
         <dict>
           <key>name</key>
           <string>keyword.other.luna</string>
@@ -304,6 +304,21 @@
       <string>\b([\w_\.]+):[^\w_]</string>
       <key>name</key>
       <string>keyword.other.luna</string>
+    </dict>
+    <!-- Object functions provided by Luna -->
+    <dict>
+      <key>captures</key>
+      <dict>
+        <key>1</key>
+        <dict>
+          <key>name</key>
+          <string>support.function.luna</string>
+        </dict>
+      </dict>
+      <key>match</key>
+      <string>\.(each|each_i|is_a\?|to_s|to_b|is_s|is_b|is_t|is_nil|is_n|to_n|str\?|tab\?|num\?|nil\?|func\?|is_f|presence)[\s\n]</string>
+      <key>name</key>
+      <string>support.function.luna</string>
     </dict>
     <!-- Important constants -->
     <dict>
