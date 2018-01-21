@@ -301,6 +301,32 @@ function() print('test') end
 function(a, b, c) print(a, b, c) end
 ```
 
+### Switches
+Just like a lot of other languages, Luna features the ```switch``` conditions.
+```
+switch some_condition
+case 'string'
+  ...
+case 123
+  ...
+case false
+  ...
+else
+  ... // default case
+end
+```
+```lua
+if (some_condition == 'string') then
+  ...
+elseif (some_condition == 123) then
+  ...
+elseif (some_condition == false) then
+  ...
+else
+  ... -- default case
+end
+```
+
 ## More features are being developed. Check back later.
 
 # Convention over Configuration
