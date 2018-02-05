@@ -245,6 +245,7 @@ local function __yield_block(message)
 end
 bar(__yield_block)
 ```
+Yield blocks can be mixed with splat arguments, the compiler is aware of both of them and tries to play nicely.
 
 ### Namespaces
 Namespaces is a common concept for a lot of programming languages. In Luna they are a lot like C#'s namespaces.
