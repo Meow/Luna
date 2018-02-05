@@ -207,7 +207,7 @@ end
 
 luna.pp:AddProcessor("logic", function(code)
   // ? in function names
-  code = code:gsub("([%w%d_]+)[?]+([%s\n%()])","%1__bool%2")
+  code = code:gsub("([%w_]+)[?]+([%s\n%()])","%1__bool%2")
   code = save_strings(code)
 
   local no_parse = {}
@@ -221,7 +221,8 @@ luna.pp:AddProcessor("logic", function(code)
   end)
 
   code = fix_conditions(code)
-  code = indent_blocks(code)
+  -- Indent blocks feature deprecated!
+  --code = indent_blocks(code)
 
   local cobj = {code = code, set = function(self, new)
     self.code = new or self.code

@@ -1,4 +1,4 @@
-var test_var = 'help'
+test_var = 'help'
 
 switch test_var
   case 'help'
@@ -9,11 +9,21 @@ end
 
 func foo(b, *args)
   print args.test
+
+  yield
 end
 
-foo test: 'hello world ish maybe'
+test = 'hello'
+test = 'world'
 
-test or= {}
+test.upper
+test.lower
+
+foo test: 'hello world ish maybe' do
+  print 'test'
+end
+
+glob test or= {}
 
 namespace Test
   func foo

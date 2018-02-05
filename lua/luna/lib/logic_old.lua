@@ -212,7 +212,7 @@ local function funcFix(code, pos, buf)
 	local fc = remainder:sub(1, 1)
 
 	-- Check if it's a function call by checking the pattern.
-	if (remainder:len() < 1 or fc:match("[%w%d_'\"]") and !remainder:starts("then")) then
+	if (remainder:len() < 1 or fc:match("[%w_'\"]") and !remainder:starts("then")) then
 		-- Fixing a function definition
 		if (buf == "function") then
 			-- detect a one-liner
@@ -291,7 +291,7 @@ local function patchReturns(code)
 
 				if (!operators[statement] and !before:find("return")) then
 					if (statement != "") then
-						if (before:find("function ") or !before:find("[%w%d_]+")) then
+						if (before:find("function ") or !before:find("[%w_]+")) then
 							block = patch(block, i + 1, i + olen, ind.."return "..statement)
 						else
 							block = patch(block, bs + 1, i + olen, ind.."return "..before.." "..statement)
@@ -323,10 +323,10 @@ luna.pp:AddProcessor("logic", function(code)
 	code = code:gsub("->", ":")
 
 	// ! calls a function with no arguments.
-	code = code:gsub("([%w%d_]+)[!]+([%s\n%)])","%1()%2")
+	code = code:gsub("([%w_]+)[!]+([%s\n%)])","%1()%2")
 
 	// ? in function names
-	code = code:gsub("([%w%d_]+)[?]+([%s\n%()])","%1__bool%2")
+	code = code:gsub("([%w_]+)[?]+([%s\n%()])","%1__bool%2")
 
 	local buf = ""
 	local instring = false
@@ -377,7 +377,7 @@ luna.pp:AddProcessor("logic", function(code)
 			-- do the same for {} style do-end blocks.
 			elseif (buf == "{") then
 				code = doFix(code, i, buf) or code
-			elseif (!operators[buf] and buf:match("[%w%d_]+") and !buf:isnumber() and !buf:isbool()) then
+			elseif (!operators[buf] and buf:match("[%w_]+") and !buf:isnumber() and !buf:isbool()) then
 				code = funcFix(code, i, buf) or code
 			end
 
@@ -389,7 +389,7 @@ luna.pp:AddProcessor("logic", function(code)
 		buf = tostring(buf)..tostring(v)
 	end
 
-	if (buf != "" and !operators[buf] and buf:match("[%w%d_]+")) then
+	if (buf != "" and !operators[buf] and buf:match("[%w_]+")) then
 		code = funcFix(code, i, buf) or code
 	end
 

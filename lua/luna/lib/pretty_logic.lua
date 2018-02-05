@@ -17,8 +17,8 @@ luna.pp:AddProcessor("pretty_logic", function(code)
     end
   end)
 
-  code = code:gsub("([^%w_])do%s*%(%s*%)", "%1function()")
-  code = code:gsub("([^%w_])do%s*%(([^%z\n]+)%)", "%1function(%2)")
+  code = code:gsub("([^%w_])fn%s*%(%s*%)", "%1function()")
+  code = code:gsub("([^%w_])fn%s*%(([^%z\n]+)%)", "%1function(%2)")
 
   return code
 end)

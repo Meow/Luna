@@ -193,12 +193,22 @@ function read_arguments(code, begin, read_expressions, read_special)
       local eol = code:find("\n", i)
       local line = code:sub(i, code:find("\n", i))
       local s, e, name, val, ending = line:find("([%w_]+):%s*([^,\n]+)([\n,])")
+      local st, ed = line:find("do")
+
+      -- Yield
+      if (st) then
+        -- Yield blocks are usually at the end of function call,
+        -- enforce the value.
+        e = st - 1
+        ending = "\n"
+      end
 
       if (s) then
         skip = e - 1
 
         if (ending == "\n") then
           local end_pos = i + e - 2
+          MsgC(code:sub(begin, end_pos).."\n", COLOR_GREEN)
           return code:sub(begin, end_pos), begin, end_pos, code:sub(end_pos, end_pos)
         end
 

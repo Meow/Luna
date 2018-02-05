@@ -36,10 +36,30 @@ The following tokens were aliased:
 ```
 func       -> function
 elif/elsif -> elseif
-var        -> local
 yes/no     -> true/false
 is         -> ==
 is not     -> !=
+```
+
+### Variables are local by default
+All of the variables are local by default, which means that you don't need to specify the ```local``` keyword anymore. If the variable is found in the global table, it will be treated as global, unless explicitly marked local.
+
+Functions are always treated as globals unless explicitly marked local.
+
+The ```global``` (or ```glob```) keyword allows you to explicitly declare the variable as global.
+```
+global var = true
+test = 123
+foo = 'hello!'
+foo = 'world'
+SOME_GLOBAL_VAR = 123 // Assuming this variable exists in _G table
+```
+```lua
+var = true
+local test = 123
+local foo = 'hello!'
+foo = 'world'
+SOME_GLOBAL_VAR = 123 // Assuming this variable exists in _G table
 ```
 
 ### Parentheses are optional
@@ -109,52 +129,6 @@ function foo()
   return 'this will be returned'
 end
 ```
-
-### 'then' is optional, 'end' too, if using the indentation blocks
-```
-func foo(arg)
-  if arg == 1
-    print arg
-  end
-
-  if arg == 2
-    print arg
-  else
-    print 'error'
-end
-```
-```lua
-function foo(arg)
-  if arg == 1 then
-    print(arg)
-  end
-
-  if arg == 2 then
-    print(arg)
-  else
-    print('error')
-  end
-end
-```
-
-Indentation blocks are not limited to a single statement after the ```if```
-```
-func foo
-  if true
-    print 'hello'
-    print 'world'
-end
-```
-```lua
-function foo()
-  if true then
-    print('hello')
-    print('world')
-  end
-end
-```
-
-Indentation blocks require you to use proper indentation.
 
 ### Methods can be called on literals
 You can call certain methods directly on numbers and strings, as well as tables.
@@ -233,6 +207,45 @@ foo(nil, nil, {['bar'] = "you don't necessarily have to provide all of the argum
 
 **Splat arguments are limited to one splat argument per function.**
 
+### Yield blocks
+Yield blocks are functions / code blocks that can be executed by calling the ```yield``` special function anywhere inside of your function's body. This is, however, different from passing a function as an argument, as this method reads the first do-end block after the function call and passes it as the callback. Plus it's plain shorter to write a yield block than mess with arguments.
+```
+func foo
+  yield
+end
+
+func bar
+  yield 'hello'
+end
+
+foo do
+  print 'test'
+end
+
+bar do(message)
+  print message
+end
+```
+```lua
+function foo(_yield)
+  return _yield()
+end
+
+function bar(_yield)
+  return _yield('hello')
+end
+
+local function __yield_block()
+  return print('test')
+end
+foo(__yield_block)
+
+local function __yield_block(message)
+  return print(message)
+end
+bar(__yield_block)
+```
+
 ### Namespaces
 Namespaces is a common concept for a lot of programming languages. In Luna they are a lot like C#'s namespaces.
 ```
@@ -293,8 +306,8 @@ if !(my_var != 'error') then return false end
 ### Anonymous functions
 There is a shorthand way to define anonymous functions
 ```
-do() print 'test' end
-do(a, b, c) print a, b, c end
+fn() print 'test' end
+fn(a, b, c) print a, b, c end
 ```
 ```lua
 function() print('test') end

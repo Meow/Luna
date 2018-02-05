@@ -2,7 +2,6 @@ local macros = {
 	["func"] = "function",
 	["elsif"] = "elseif",
 	["elif"] = "elseif",
-	["var"] = "local",
 	["yes"] = "true",
 	["no"] = "false",
 	["is"] = "==",
@@ -16,7 +15,7 @@ luna.pp:AddProcessor("macros", function(code)
 		local s, e = string.find(code, k.."[%s%(%)%[%]]")
 
 		while (s) do
-			if (!code:sub(s - 1, s - 1):match("[%w%d_]")) then
+			if (!code:sub(s - 1, s - 1):match("[%w_]")) then
 				code = (s != 1 and code:sub(1, s - 1) or "")..v..code:sub(e, code:len())
 			end
 
