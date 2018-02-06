@@ -65,7 +65,7 @@ SOME_GLOBAL_VAR = 123 // Assuming this variable exists in _G table
 ### Parentheses are optional
 Putting parentheses in the function calls is optional in most cases. There are some edge scenarios where this might still be necessary, but generally you don't need to do that anymore
 ```
-var my_string = string.gsub 'hello world', 'hello', 'hi'
+my_string = string.gsub 'hello world', 'hello', 'hi'
 ```
 Will get pre-processed into
 ```lua
@@ -180,7 +180,7 @@ for k, v in pairs({1, 2, 3}) do ... end
 ### String interpolation
 Luna supports string interpolation.
 ```
-var my_string = 'This is an #{string.upper 'amazing'} string!'
+my_string = 'This is an #{string.upper 'amazing'} string!'
 ```
 ```lua
 local my_string = 'This is an '..(string.upper('amazing'))..' string!'
@@ -385,7 +385,7 @@ Local variables must be all lowercase with words separated by an underscore (```
 
 Example:
 ```
-var my_variable = 'foo'
+my_variable = 'foo'
 ```
 
 Global variables have additional rules depending on their purpose.
