@@ -375,6 +375,9 @@ end
 
 ## More features are being developed. Check back later.
 
+
+
+
 # Convention over Configuration
 Luna follows the CoC scheme, which means that you are expected to name your variables and function in a certain manner, as well as adhere to a certain coding standard. The convention we based our off is the standard Lua's convention, with small changes to fit modern development needs.
 
@@ -471,3 +474,48 @@ func foo
   end
 end
 ```
+
+### Indentation
+Your indentation must be consistent throughout your project. Two spaces should be used for indentation. If inconsistent indentation is detected, the language compiler will throw an error.
+
+All of the code inside functions bodies, ```if``` blocks, loops should be indented. ```switch``` block is not required to be indented if you use indentation within the ```case``` blocks.
+
+Both of the following examples are valid:
+```
+switch condition
+case 0
+  ...
+case 1
+  ...
+else
+  ...
+end
+```
+```
+switch condition
+  case 0
+    ...
+  case 1
+    ...
+  else
+    ...
+end
+```
+
+### Operators
+By convention, you should avoid using the ```||, &&``` operators in your code. Instead use ```or, and```.
+
+Use proper assignment operators whenever possible, for example ```a += b``` instead of ```a = a + b```.
+
+Use ```switch``` when you need to create a if-elseif-else structure.
+
+### Do not repeat yourself (DRY)
+Keep your code DRY. Avoid writing the same code over and over again in several places, instead consider making it a function. If you need something for your project, check if there is something that provides what you need in LPM (Luna Package Manager). It's always easier to just write a single line rather than hundreds of lines of code.
+
+If considering adding a library into your project, check if it's on LPM first, rather than copying that library into the project. If the library you want to use is not there, you can always suggest it to be added at luna-lang.net!
+
+### Other libraries may add to the convention
+Multiple other libraries (such as database modules) may provide their own additions to this convention (provided that those additions don't go against any of the previous conventions).
+
+Please always check the documentation of the major modules to see if there are any!
+
