@@ -208,7 +208,7 @@ function read_arguments(code, begin, read_expressions, read_special)
 
         if (ending == "\n") then
           local end_pos = i + e - 2
-          MsgC(code:sub(begin, end_pos).."\n", COLOR_GREEN)
+
           return code:sub(begin, end_pos), begin, end_pos, code:sub(end_pos, end_pos)
         end
 
