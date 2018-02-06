@@ -117,6 +117,38 @@ function dangerous_func__excl()
 end
 ```
 
+### 'then' is optional in logical blocks
+```
+func foo(arg)
+  if arg == 1
+    print arg
+  end
+
+  if arg == 2
+    print arg
+  elseif arg == 3
+    print 'this number does not exist!'
+  else
+    print 'error'
+  end
+end
+```
+```lua
+function foo(arg)
+  if arg == 1 then
+    print(arg)
+  end
+
+  if arg == 2 then
+    print(arg)
+  elseif arg == 3 then
+    print('this number does not exist!')
+  else
+    print('error')
+  end
+end
+```
+
 ### Implicit returns
 The last statement of the function will be automatically returned.
 ```
