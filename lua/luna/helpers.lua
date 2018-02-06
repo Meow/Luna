@@ -65,15 +65,14 @@ function read_argument(code, begin)
       continue
     end
 
-    local sp, word = code:match("(%s*)([^%s\n%(%)%[%]]+)", i)
+    local fstr, fend, sp, word = code:find("(%s*)([^%s\n%(%)%[%]]+)", i)
 
     -- functions as args
     if (word == "function") then
-      local context_end, real_end = luna.util.FindLogicClosure(code, i, 0)
+      local context_end, real_end = luna.util.FindLogicClosure(code, fend, 1)
 
       if (context_end) then
         skip = code:sub(i, real_end):len() - 1
-
         continue
       end
     end
@@ -172,15 +171,16 @@ function read_arguments(code, begin, read_expressions, read_special)
       end
     end
 
-    local comma, sp, word = code:match("([,]?)(%s*)([^%s\n%(%)%[%]]+)", i)
+    local fstr, fend, comma, sp, word = code:find("([,]?)(%s*)([^%s\n%(%)%[%]]+)", i)
 
     -- functions as args
     if (word == "function") then
-      local context_end, real_end = luna.util.FindLogicClosure(code, i, 0)
+      local context_end, real_end = luna.util.FindLogicClosure(code, fend, 1)
 
       if (context_end) then
         if (comma == ",") then
-          skip = code:sub(i, real_end):len() - 1
+          local substr = code:sub(i, real_end)
+          skip = code:sub(i, real_end):len()
 
           continue
         elseif (read_special) then -- yielded blocks

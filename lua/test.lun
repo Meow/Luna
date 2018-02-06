@@ -1,8 +1,18 @@
 test_var = 'help'
 
 switch test_var
+  case 'nothelp'
   case 'help'
+  case 'derp'
+  case 1
+  case 2
+  case 3
     print 'test test'
+  case 4
+  case 5
+    print 'derp'
+  case false
+    print 'true'
   else
     print 'not test test'
 end
@@ -12,6 +22,16 @@ func foo(b, *args)
 
   yield
 end
+
+func bar(a = 100, b)
+  a = 123
+  b = 321
+end
+
+bar 101, fn
+  print 'shite'
+end
+
 
 test = 'hello'
 test = 'world'
@@ -23,7 +43,7 @@ foo test: 'hello world ish maybe' do
   print 'test'
 end
 
-glob test or= {}
+test or= {}
 
 namespace Test
   func foo

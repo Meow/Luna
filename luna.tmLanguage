@@ -14,7 +14,7 @@
 
   <!-- code folding -->
   <key>foldingStartMarker</key>
-  <string>^\s*\b(func|do|function|local\s+function|if|for)\b|{[ \t]*$|\[\[</string>
+  <string>^\s*\b(func|do|function|fn|local\s+function|if|for)\b|{[ \t]*$|\[\[</string>
 
   <key>foldingStopMarker</key>
   <string>\bend\b|^\s*}|\]\]</string>
@@ -93,7 +93,7 @@
         </dict>
       </dict>
       <key>match</key>
-      <string>\b(function|func)\s*(\()([^)]*)(\))</string>
+      <string>\b(function|func|fn)\s*(\()([^)]*)(\))</string>
       <key>name</key>
       <string>meta.function.luna</string>
     </dict>
@@ -286,7 +286,7 @@
     <!-- Control keywords -->
     <dict>
       <key>match</key>
-      <string>\b(break|do|else|for|if|switch|case|unless|is|is%snot|elseif|elif|elsif|return|then|repeat|while|until|end|function|namespace|class|glob|global|public|private|protected|let|local|in|continue|goto|or=|and=)\b</string>
+      <string>\b(break|do|fn|else|for|if|switch|case|unless|is|is%snot|elseif|elif|elsif|return|then|repeat|while|until|end|function|namespace|class|glob|global|public|private|protected|let|local|in|continue|goto|or=|and=)\b</string>
       <key>name</key>
       <string>keyword.control.luna</string>
     </dict>
