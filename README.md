@@ -465,6 +465,23 @@ You **should not** put a space before the parentheses in the function definition
 
 In table definitions, the colon (```:```) **must** also be followed by a space.
 
+Example:
+```
+func foo(a, b, c)
+  if a and (b or c)
+    return {
+      a: a,
+      b: b,
+      c: c
+    }
+  end
+
+  b += 100
+
+  return b
+end
+```
+
 ### Parentheses
 You should only put parentheses if **absolutely** necessary. This includes function definitions (only if that function accepts arguments), function calls as arguments to another function call and where otherwise required by the syntax.
 
