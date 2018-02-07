@@ -376,8 +376,6 @@ end
 ## More features are being developed. Check back later.
 
 
-
-
 # Convention over Configuration
 Luna follows the CoC scheme, which means that you are expected to name your variables and function in a certain manner, as well as adhere to a certain coding standard. The convention we based our off is the standard Lua's convention, with small changes to fit modern development needs.
 
@@ -453,6 +451,24 @@ class MyClass
   end
 end
 ```
+
+### Spaces
+The following characters **must not** have any trailing / leading spaces: ```[```, ```(```, ```]```, ```)```
+
+You **must** put a trailing space after a comma (```,```)
+
+You **must** surround any logical or assignment operators with spaces. This includes the following: any assignment operator (e.g. ```+=```, ```=```), comparison operators (```==```, ```>=```, etc), logical operators (```and```, ```or```, ```||```, etc) and bitwise operators (```|```, ```&```, etc).
+
+You **must** put a space after an ```if``` condition (this includes ```elseif``` too).
+
+You **should not** put a space before the parentheses in the function definition (```func a(...)```).
+
+In table definitions, the colon (```:```) **must** also be followed by a space.
+
+### Parentheses
+You should only put parentheses if **absolutely** necessary. This includes function definitions (only if that function accepts arguments), function calls as arguments to another function call and where otherwise required by the syntax.
+
+You **should not** put any parentheses in the logical blocks, unless they are used to separate the conditions (e.g: ```if (a or b) and (c or d)```)
 
 ### Newlines
 You should put a newline before an ```if``` logical block, any loop (```for```, ```while```), ```return``` statement, ```continue``` or ```break```, unless they are directly preceeded by the function definition.
