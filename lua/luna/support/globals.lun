@@ -1,0 +1,25 @@
+func compile(*args)
+  if args['string']
+    return CompileString args['string'], args[1], args[2]
+  elif args['file']
+    return CompileFile args['file'], args[1], args[2]
+  end
+end
+
+global:
+  color = Color
+  vector = Vector
+  col_a = ColorAlpha
+  col_r = ColorRand
+  col_to_hsv = ColorToHSV
+  lerp = Lerp
+  model = Model
+  msg = Msg
+  msgc = MsgC
+  scrw = ScrW
+  scrh = ScrH
+  time = CurTime
+  ftime = FrameTime
+  runstring = RunString
+  runstr = RunStringEx
+  

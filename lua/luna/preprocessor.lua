@@ -456,7 +456,7 @@ hook.Add("luna_compiler_logic_fixed", "luna_read_globals", function(obj)
 				info.type = "function"
 				info.is_func = true
 				
-				local context_end, real_end = luna.util.FindLogicClosure(code, e, 0)
+				local context_end, real_end = luna.util.FindLogicClosure(code, e)
 
 				if (context_end) then
 					local block = code:sub(s, real_end)

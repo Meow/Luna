@@ -3,8 +3,26 @@ luna.pp:AddProcessor("local_by_default", function(code)
   local locals = {}
   local lines = code:split("\n")
   local result = ""
+  local indent = nil
 
   for l_num, line in ipairs(lines) do
+    if (line:find("global:")) then
+      indent = line:match("([%s]*)global:")
+      lines[l_num] = lines[l_num]:gsub("global:", "")
+
+      continue
+    end
+
+    if (indent and line:trim() != '') then
+      local cur_indent = line:match("^([%s]+)[%w_%.%:]")
+
+      if (cur_indent and cur_indent:len() > indent:len()) then
+        continue
+      else
+        indent = nil
+      end
+    end
+
     -- Quick and dirty global keyword check. Yes, I know it's not required to be at the beginning of the statement.
     -- Let's call this an 'unintended feature'...
     if (!line:find("global%s+") and !line:find("glob%s+") and !line:find("local%s+")) then

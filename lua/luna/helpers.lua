@@ -248,3 +248,204 @@ function read_arguments(code, begin, read_expressions, read_special)
 
   return false
 end
+
+function read_string(code, pos)
+	local str_open, open_char, close_char, close_seq, open_seq, open_pos = false, "", "", "", "", -1
+	local ignore_until = false
+	local i = pos
+
+	while (i < code:len()) do
+		i = i + 1
+
+		local v = code:sub(i, i)
+
+		if (ignore_until) then
+			if (ignore_until == v) then
+				ignore_until = false
+			end
+
+			continue
+		end
+
+		if (v == "{" and code:sub(i - 1, i - 1) == "#") then
+			ignore_until = "}"
+
+			continue
+		end
+
+		if (str_open) then
+			if (v != close_char) then
+				continue
+			elseif (code:sub(i, i + close_seq:len() - 1) == close_seq) then
+				return open_pos, i, open_char, close_char, open_seq, close_seq
+			end
+		end
+
+		if (v == "\"" or v == "'") then
+			str_open = true
+			open_char = v
+			open_seq = v
+			close_char = v
+			close_seq = v
+			open_pos = i
+		elseif (v == "[" and code:sub(i + 1, i + 1) == "[") then
+			str_open = true
+			open_char = "["
+			open_seq = "[["
+			close_char = "]"
+			close_seq = "]]"
+			open_pos = i
+		end
+	end
+
+	return nil
+end
+
+function read_string_backwards(code, pos)
+	local str_open, open_char, close_char, close_seq, open_seq, open_pos = false, "", "", "", "", -1
+	local ignore_until = false
+	local i = pos
+
+	while (i > 0) do
+		i = i - 1
+
+		local v = code:sub(i, i)
+
+		if (ignore_until) then
+			if (ignore_until == v) then
+				ignore_until = false
+			end
+
+			continue
+		end
+
+		if (str_open) then
+			if (v != close_char) then
+				continue
+			elseif (code:sub(i - close_seq:len() + 1, i) == close_seq) then
+				return open_pos, i, open_char, close_char, open_seq, close_seq
+			end
+		end
+
+		if (v == "\"" or v == "'") then
+			str_open = true
+			open_char = v
+			open_seq = v
+			close_char = v
+			close_seq = v
+			open_pos = i
+		elseif (v == "]" and code:sub(i - 1, i - 1) == "]") then
+			str_open = true
+			open_char = "]"
+			open_seq = "]]"
+			close_char = "["
+			close_seq = "[["
+			open_pos = i
+		end
+	end
+
+	return nil
+end
+
+local opposites = {
+  ["{"] = "}",
+  ["("] = ")",
+  ["["] = "]",
+  ["}"] = "{",
+  [")"] = "(",
+  ["]"] = "["
+}
+
+function read_obj(code, pos)
+  local buf = ""
+  local ignore_until_pos = nil
+  
+  for i = pos, code:len() do
+    local v = code[i]
+
+    if (ignore_until_pos and ignore_until_pos != i) then
+      buf = buf..v
+
+      continue
+    else
+      ignore_until_pos = nil
+    end
+
+    if (buf == "" and v:match("%s")) then continue end
+
+    if (v == "{" or v == "(" or v == "[") then
+      local closer = luna.util.FindTableClosure(code, i, 0, v, opposites[v])
+
+      if (closer != -1) then
+        ignore_until_pos = closer
+      end
+    end
+
+    if (v == "\"" or v == "'" or v == "[" and code[i + 1] == "[") then
+      local open, close = read_string(code, i)
+
+      if (close) then
+        ignore_until_pos = close
+      end
+    end
+
+    if (v == " ") then
+      return buf, i - 1
+    end
+
+    buf = buf..v
+  end
+
+  if (buf != "") then
+    return buf, code:len()
+  end
+
+  return nil
+end
+
+function read_obj_backwards(code, pos)
+  local buf = ""
+  local ignore_until_pos = nil
+  
+  for i = pos, 1, -1 do
+    local v = code[i]
+
+    if (ignore_until_pos and ignore_until_pos != i) then
+      buf = buf..v
+
+      continue
+    else
+      ignore_until_pos = nil
+    end
+
+    if (buf == "" and v:match("%s")) then continue end
+
+    if (v == "}" or v == ")" or v == "]") then
+      local closer = luna.util.FindTableClosure(code, i, 0, v, opposites[v])
+
+      if (closer != -1) then
+        ignore_until_pos = closer
+      end
+    end
+
+    if (v == "\"" or v == "'" or v == "]" and code[i - 1] == "]") then
+      local open, close = read_string(code, i)
+
+      if (close) then
+        ignore_until_pos = close
+      end
+    end
+
+    if (v == " " or v == "\n") then
+      return string.reverse(buf), i + 1
+    end
+
+    buf = buf..v
+  end
+
+  if (buf != "") then
+    return string.reverse(buf), 1
+  end
+
+  return nil
+end

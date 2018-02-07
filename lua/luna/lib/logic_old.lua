@@ -253,7 +253,7 @@ local function patchReturns(code)
 	local fo, fe = code:find("function")
 
 	while (fo) do
-		local fc, fce = luna.util.FindLogicClosure(code, fo, 0)
+		local fc, fce = luna.util.FindLogicClosure(code, fo)
 		local block = code:sub(fo, fce)
 		local statement = ""
 		local istr, iopnr = false, ""

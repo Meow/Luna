@@ -369,12 +369,12 @@ function string.RemoveTextFromStart(str, strNeedle, bAllOccurences)
 end
 
 -- A function to check whether the string is full uppercase or not.
-function string.IsUppercase(str)
+function string.is_upper(str)
 	return string.upper(str) == str
 end
 
 -- A function to check whether the string is full lowercase or not.
-function string.IsLowercase(str)
+function string.is_lower(str)
 	return string.lower(str) == str
 end
 
@@ -459,12 +459,12 @@ local bools = {
 	["no"] = false
 }
 
-function string.isbool(str)
+function string.is_bool(str)
 	return bools[str] != nil
 end
 
 -- A function to count character in a string.
-function string.CountCharacter(str, char)
+function string.count(str, char)
 	local exploded = string.explode("", str)
 	local hits = 0
 

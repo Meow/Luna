@@ -35,8 +35,7 @@ end
 test = 'hello'
 test = 'world'
 
-test.upper
-test.lower
+test.upper.lower.is_b
 
 foo test: 'hello world ish maybe' do
   print 'test'
