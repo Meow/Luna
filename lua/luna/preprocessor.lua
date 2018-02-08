@@ -500,8 +500,8 @@ include("lib/minifier.lua")
 include("lib/macros.lua")
 include("lib/define.lua")
 include("lib/tables.lua")
-include("lib/default_args.lua")
 include("lib/local_by_default.lua")
+include("lib/default_args.lua")
 include("lib/pretty_logic.lua")
 include("lib/loops.lua")
 include("lib/switch.lua")
@@ -639,6 +639,10 @@ hook.Add("Lua_Preprocess", "Luna_Preprocessor", function(code, path)
 	if (!path:find(".lun")) then
 		return code
 	end
+
+	_SCOPE = {}
+	_LOCALS = {}
+	_CONTEXTS = {}
 
 	CURRENT_PATH = path
 

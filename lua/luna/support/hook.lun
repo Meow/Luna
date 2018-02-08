@@ -1,6 +1,0 @@
-global hook or= {}
-hook.add = hook.Add
-hook.call = hook.Call
-hook.run = hook.Run
-hook.table = hook.GetTable
-hook.remove = hook.Remove

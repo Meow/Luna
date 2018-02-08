@@ -52,3 +52,5 @@ namespace Test
   func foo
   end
 end
+
+include 'luna/support/support.lun'

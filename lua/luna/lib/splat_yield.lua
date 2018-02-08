@@ -115,7 +115,8 @@ local function parse_splat(code, obj)
   local s, e = block:find("%*")
 
   if (s) then
-    local ending = block:find(",", s) or block:find("%)", s)
+    local first_line = block:sub(1, block:find("\n") or block:len())
+    local ending = first_line:find(",", s) or block:find("%)", s)
     local arg_end = block:find("%)", s)
     local arg = block:sub(s + 1, ending - 1)
 

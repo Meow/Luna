@@ -8,10 +8,9 @@ luna.pp:AddProcessor("local_by_default", function(code)
 
   for l_num, line in ipairs(lines) do
     tabl = tabl + char_count(line, "{")
+    tabl = tabl - char_count(line, "}")
 
     if (tabl > 0) then
-      tabl = tabl - char_count(line, "}")
-
       continue
     end
 
@@ -34,7 +33,7 @@ luna.pp:AddProcessor("local_by_default", function(code)
 
     -- Quick and dirty global keyword check. Yes, I know it's not required to be at the beginning of the statement.
     -- Let's call this an 'unintended feature'...
-    if (!line:find("global%s+") and !line:find("glob%s+") and !line:find("local%s+")) then
+    if (!line:find("global[%s%(]+") and !line:find("glob[%s%(]+") and !line:find("local%s+")) then
       local s, e, vars = line:find("([%w_,%.]+)%s-=[^=]")
 
       if (s and !vars:find("function") and !vars:find("%.")) then
@@ -79,7 +78,7 @@ luna.pp:AddProcessor("local_by_default", function(code)
         end
       end
     else
-      lines[l_num] = line:gsub("global", ""):gsub("glob%s", "")
+      lines[l_num] = line:gsub("global%s?", ""):gsub("glob%s", "")
     end
   end
 

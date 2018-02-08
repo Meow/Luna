@@ -42,22 +42,32 @@ function luna.pp:RegisterSpecialFunction(a, b)
 	special_funcs[a] = b
 end
 
+local function check_obj(a, b)
+	if (istable(_G[a])) then
+		return _G[a][b]
+	end
+end
+
 luna.pp:AddProcessor("special_funcs", function(code)
 	-- No arguments
 	local s, e, fn = code:find("%.([%w_%?!]+)")
 
 	while (s) do
-		local obj, pos = read_obj_backwards(code, s - 1)
+		local rest_of_line = code:sub(e + 1, code:find("\n", e)):trim():trim("\n")
 
-		if (obj) then
-			if (special_funcs[fn]) then
-				code = luna.pp:PatchStr(code, pos, e, special_funcs[fn].."("..obj..")")
-			elseif (obj:match("%d+") and math[fn]) then
-				code = luna.pp:PatchStr(code, pos, e, "math."..fn.."("..obj..")")
-			elseif (string[fn]) then
-				code = luna.pp:PatchStr(code, pos, e, "string."..fn.."("..obj..")")
-			elseif (table[fn]) then
-				code = luna.pp:PatchStr(code, pos, e, "table."..fn.."("..obj..")")
+		if (!rest_of_line:starts("=")) then
+			local obj, pos = read_obj_backwards(code, s - 1)
+
+			if (obj and !check_obj(obj, fn)) then
+				if (special_funcs[fn]) then
+					code = luna.pp:PatchStr(code, pos, e, special_funcs[fn].."("..obj..")")
+				elseif (obj:match("%d+") and math[fn]) then
+					code = luna.pp:PatchStr(code, pos, e, "math."..fn.."("..obj..")")
+				elseif (string[fn]) then
+					code = luna.pp:PatchStr(code, pos, e, "string."..fn.."("..obj..")")
+				elseif (table[fn]) then
+					code = luna.pp:PatchStr(code, pos, e, "table."..fn.."("..obj..")")
+				end
 			end
 		end
 
