@@ -4,8 +4,17 @@ luna.pp:AddProcessor("local_by_default", function(code)
   local lines = code:split("\n")
   local result = ""
   local indent = nil
+  local tabl = 0
 
   for l_num, line in ipairs(lines) do
+    tabl = tabl + char_count(line, "{")
+
+    if (tabl > 0) then
+      tabl = tabl - char_count(line, "}")
+
+      continue
+    end
+
     if (line:find("global:")) then
       indent = line:match("([%s]*)global:")
       lines[l_num] = lines[l_num]:gsub("global:", "")

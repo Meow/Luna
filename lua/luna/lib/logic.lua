@@ -2,6 +2,13 @@ local blocked_arg_strings = {
   "end", "then", "in", "pairs", "pairs(", "ipairs", "ipairs("
 }
 
+local blocked_characters = {
+  ["{"] = true, ["}"] = true, ["("] = true,
+  [")"] = true, ["["] = true, ["]"] = true,
+  ["."] = true, [","] = true, ["/"] = true,
+  ["&"] = true, ["|"] = true, [":"] = true
+}
+
 local function fix_bracket_argumented_call(code, bracket_start)
   local arg_str, s, e, end_char = read_arguments(code, bracket_start)
 
@@ -10,6 +17,10 @@ local function fix_bracket_argumented_call(code, bracket_start)
       if (arg_str:find("[^%w]?"..string.pattern_safe(v).."[^%w]") or arg_str == v) then
         return code
       end
+    end
+
+    if (arg_str:len() == 1 and blocked_characters[arg_str]) then
+      return code
     end
 
     code = luna.pp:PatchStr(code, s, s, "(")

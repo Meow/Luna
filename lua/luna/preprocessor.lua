@@ -499,6 +499,7 @@ include("helpers.lua")
 include("lib/minifier.lua")
 include("lib/macros.lua")
 include("lib/define.lua")
+include("lib/tables.lua")
 include("lib/default_args.lua")
 include("lib/local_by_default.lua")
 include("lib/pretty_logic.lua")
@@ -510,6 +511,7 @@ include("lib/ops.lua")
 include("lib/splat_yield.lua")
 include("lib/logic.lua")
 include("lib/str_interp.lua")
+include("lib/realm.lua")
 
 local function analyzeIndentation(code)
 	local lid = ""
@@ -619,7 +621,7 @@ local function strip_comments(code)
 	return code
 end
 
-local DEBUG = true
+local DEBUG = (getenv("LUNA_ENV") == "development")
 
 local function minify(code)
 	if (!DEBUG) then

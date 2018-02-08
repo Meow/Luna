@@ -2,6 +2,10 @@ luna = luna or {}
 luna.pp = luna.pp or {}
 luna.util = luna.util or {}
 
+-- temporary
+setenv = setenv or function() end
+getenv = getenv or function(k) if (k == "LUNA_REALM") then return "sv" elseif (k == "LUNA_ENV") then return "development" else return "" end end
+
 function luna.util.FindClosure(str, opener, closer, start, opnd, chk)
   chk = chk or function() return end
   local open = opnd or 0

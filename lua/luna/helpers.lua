@@ -449,3 +449,15 @@ function read_obj_backwards(code, pos)
 
   return nil
 end
+
+function char_count(str, c)
+  local count = 0
+
+  for i = 1, str:len() do
+    if (str[i] == c) then
+      count = count + 1
+    end
+  end
+
+  return count
+end

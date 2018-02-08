@@ -139,10 +139,10 @@ function table.SortByKey(t, desc)
 end
 
 --[[---------------------------------------------------------
-	Name: table.Count(table)
+	Name: table.count(table)
 	Desc: Returns the number of keys in a table
 -----------------------------------------------------------]]
-function table.Count(t)
+function table.count(t)
 	local i = 0
 	for k in pairs(t) do i = i + 1 end
 	return i
@@ -153,7 +153,7 @@ end
 	Desc: Return a random key
 -----------------------------------------------------------]]
 function table.Random(t)
-	local rk = math.random(1, table.Count(t))
+	local rk = math.random(1, table.count(t))
 	local i = 1
 	for k, v in pairs(t) do 
 		if (i == rk) then return v, k end
@@ -608,12 +608,12 @@ function table.GetFirstValue(t)
 end
 
 function table.GetLastKey(t)
-	local k, v = next(t, table.Count(t) - 1)
+	local k, v = next(t, table.count(t) - 1)
 	return k
 end
 
 function table.GetLastValue(t)
-	local k, v = next(t, table.Count(t) - 1)
+	local k, v = next(t, table.count(t) - 1)
 	return v
 end
 

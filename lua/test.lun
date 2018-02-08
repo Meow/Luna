@@ -17,6 +17,11 @@ switch test_var
     print 'not test test'
 end
 
+a = {
+  key: 123,
+  shit: 321
+}
+
 func foo(b, *args)
   print args.test
 
