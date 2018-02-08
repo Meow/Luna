@@ -117,6 +117,31 @@ function dangerous_func__excl()
 end
 ```
 
+### Shorthand way to make tables
+You can assign table keys to variables using the ```:``` operator, instead of ```=```.
+```
+my_table = {
+  key: 'value',
+  foo: 123,
+  bar: 321,
+  1, 2, 3,
+  a: {
+    b: 'c'
+  }
+}
+```
+```lua
+local my_table = {
+  key = 'value',
+  foo = 123,
+  bar = 321,
+  1, 2, 3,
+  a = {
+    b = 'c'
+  }
+}
+```
+
 ### 'then' is optional in logical blocks
 ```
 func foo(arg)
