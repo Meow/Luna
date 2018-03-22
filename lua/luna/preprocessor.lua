@@ -497,15 +497,17 @@ end)
 
 include("helpers.lua")
 include("lib/minifier.lua")
+include("lib/lint.lua")
 include("lib/macros.lua")
 include("lib/define.lua")
 include("lib/tables.lua")
-include("lib/local_by_default.lua")
 include("lib/default_args.lua")
+include("lib/local_by_default.lua")
 include("lib/pretty_logic.lua")
 include("lib/loops.lua")
 include("lib/switch.lua")
 include("lib/special_funcs.lua")
+include("lib/oop.lua")
 include("lib/namespaces.lua")
 include("lib/ops.lua")
 include("lib/splat_yield.lua")
@@ -639,6 +641,8 @@ hook.Add("Lua_Preprocess", "Luna_Preprocessor", function(code, path)
 	if (!path:find(".lun")) then
 		return code
 	end
+
+	linter.check(code)
 
 	_SCOPE = {}
 	_LOCALS = {}

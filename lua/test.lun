@@ -33,6 +33,12 @@ func bar(a = 100, b)
   b = 321
 end
 
+class Test
+  func test_member
+
+  end
+end
+
 bar 101, fn
   print 'shite'
 end
@@ -40,7 +46,7 @@ end
 test = 'hello'
 test = 'world'
 
-test.upper.lower.is_b
+test.gsub 'a', 'b'
 
 foo test: 'hello world ish maybe' do
   print 'test'
@@ -53,4 +59,4 @@ namespace Test
   end
 end
 
-include 'luna/support/support.lun'
+//include 'luna/support/support.lun'

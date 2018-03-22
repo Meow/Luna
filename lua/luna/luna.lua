@@ -91,4 +91,16 @@ function luna.util.FindTableClosure(str, pos, opnd, custom_opener, custom_closer
   return -1
 end
 
+function table.safe_merge(to, from)
+	local oldIndex, oldIndex2 = to.__index, from.__index
+
+	to.__index = nil
+	from.__index = nil
+
+	table.Merge(to, from)
+
+	to.__index = oldIndex
+	from.__index = oldIndex2
+end
+
 include("preprocessor.lua")

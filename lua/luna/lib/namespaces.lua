@@ -24,7 +24,7 @@ function luna.namespaces:Resolve(code)
 
       code = luna.pp:PatchStr(code, s, closure_end, block)
     else
-      error("Closure not found for namespace!\n")
+      error("'end' not found for namespace!\n")
     end
 
     s, e, t = code:find("namespace%s*([%w_%.]+)%s*\n", e)

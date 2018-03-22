@@ -37,6 +37,21 @@ end
 
 register_special_func("upper", "string.upper")
 register_special_func("lower", "string.lower")
+register_special_func("reverse", "string.reverse")
+register_special_func("byte", "string.byte")
+register_special_func("char", "string.char")
+register_special_func("len", "string.len")
+register_special_func("abs", "math.abs")
+register_special_func("random", "math.random")
+register_special_func("sqrt", "math.sqrt")
+register_special_func("sin", "math.sin")
+register_special_func("cos", "math.cos")
+register_special_func("tan", "math.tan")
+register_special_func("asin", "math.asin")
+register_special_func("acos", "math.acos")
+register_special_func("ceil", "math.ceil")
+register_special_func("floor", "math.floor")
+register_special_func("sort", "table.sort")
 
 function luna.pp:RegisterSpecialFunction(a, b)
 	special_funcs[a] = b
@@ -59,6 +74,18 @@ luna.pp:AddProcessor("special_funcs", function(code)
 			local obj, pos = read_obj_backwards(code, s - 1)
 
 			if (obj and !check_obj(obj, fn)) then
+				local args, beg, endg
+				local first_char = code:sub(e + 1, e + 1)
+				
+				if (first_char == " " or first_char == "(") then
+					args, beg, endg = read_arguments(code, e + 1)
+				end
+
+				if (args) then
+					e = endg - 1 -- to account for newline
+					obj = obj..", "..args
+				end
+
 				if (special_funcs[fn]) then
 					code = luna.pp:PatchStr(code, pos, e, special_funcs[fn].."("..obj..")")
 				elseif (obj:match("%d+") and math[fn]) then
