@@ -177,8 +177,6 @@ local function process_definition(code)
 
           code_block = code_block:gsub("function%s+([%w_]+)", "function "..class_name..":%1")
 
-          MsgC(code_block.."\n", COLOR_RED)
-
           class_code = class_code:gsub("#1", class_name):gsub("#3", code_block)
 
           code = luna.pp:PatchStr(code, s, real_end, class_code)

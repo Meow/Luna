@@ -78,7 +78,6 @@ function read_argument(code, begin)
     end
 
     if (!started and v != "-" and LUA_OP_SYMBOLS[v]) then
-      print("returning false for some reason")
       return false
     end
 

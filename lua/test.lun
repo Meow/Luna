@@ -22,8 +22,10 @@ a = {
   shit: 321
 }
 
+string::sub 'a', 1, 2
+
 func foo(b, *args)
-  print args.test
+  print :args.test
 
   yield
 end
@@ -34,14 +36,19 @@ func bar(a = 100, b)
 end
 
 class MyClass
-  func test_member
-    print 'dicks'
+  func test_member(a, b)
+    print 'test member'
+  end
+
+  func init
+    print 'init call'
   end
 end
 
 // todo: get rid of :
-testing = MyClass:new()
-testing:test_member()
+testing = MyClass.new
+testing.test_member
+testing.init
 
 bar 101, fn
   print 'shite'

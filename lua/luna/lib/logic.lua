@@ -113,53 +113,6 @@ local function fix_conditions(code)
   return code
 end
 
--- Indentantion blocks (end-less logical blocks)
-local function indent_blocks(code)
-  local s, e, spaces = code:find("([^\n%S]*)if[^%z]-then")
-
-  while (s) do
-    local closure = luna.util.FindLogicClosure(code, e, (spaces:len() > 0 and 2 or 1))
-
-    -- Mismatched end amount
-    if (closure == -1) then
-      local ending = code:find("\n", e)
-      local remainder = code:sub(e + 1, ending):trim():trim("\t"):trim("\n")
-
-      if (remainder != "") then
-        if (!remainder:ends("end")) then
-          code = luna.pp:PatchStr(code, ending + 1, ending + 1, " end\n")
-        end
-      else
-        local line = code:sub(ending + 2, code:find("\n", ending + 2))
-        local indent = line:starts(luna.pp:Get("i")) and line:match("([%s]+)[^%z]+") or ""
-
-        if (indent != "") then
-          local line_start = code:find("\n", ending + line:len() + 2)
-
-          while (line_start) do
-            local line_end = code:find("\n", line_start + 1)
-            line = code:sub(line_start + 1, line_end - 1)
-
-            local line_indent = line:match("([%s]+)[^%z]+") or ""
-
-            if (!line:trim():trim("\t"):starts("else") and line_indent:len() < indent:len()) then
-              code = luna.pp:PatchStr(code, line_start, line_start, "\n"..line_indent.."end\n")
-
-              break
-            end
-
-            line_start = code:find("\n", line_start + 1)
-          end
-        end
-      end
-    end
-
-    s, e = code:find("if[%Z]-then", e)
-  end
-
-  return code
-end
-
 -- Implicit returns
 local function return_implicit(code)
   for k, v in ipairs(_CONTEXTS) do
@@ -232,8 +185,6 @@ luna.pp:AddProcessor("logic", function(code)
   end)
 
   code = fix_conditions(code)
-  -- Indent blocks feature deprecated!
-  --code = indent_blocks(code)
 
   local cobj = {code = code, set = function(self, new)
     self.code = new or self.code

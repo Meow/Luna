@@ -35,24 +35,6 @@ function register_special_func(name, replacement)
 	special_funcs[name] = replacement
 end
 
-register_special_func("upper", "string.upper")
-register_special_func("lower", "string.lower")
-register_special_func("reverse", "string.reverse")
-register_special_func("byte", "string.byte")
-register_special_func("char", "string.char")
-register_special_func("len", "string.len")
-register_special_func("abs", "math.abs")
-register_special_func("random", "math.random")
-register_special_func("sqrt", "math.sqrt")
-register_special_func("sin", "math.sin")
-register_special_func("cos", "math.cos")
-register_special_func("tan", "math.tan")
-register_special_func("asin", "math.asin")
-register_special_func("acos", "math.acos")
-register_special_func("ceil", "math.ceil")
-register_special_func("floor", "math.floor")
-register_special_func("sort", "table.sort")
-
 function luna.pp:RegisterSpecialFunction(a, b)
 	special_funcs[a] = b
 end
@@ -89,11 +71,11 @@ luna.pp:AddProcessor("special_funcs", function(code)
 				if (special_funcs[fn]) then
 					code = luna.pp:PatchStr(code, pos, e, special_funcs[fn].."("..obj..")")
 				elseif (obj:match("%d+") and math[fn]) then
-					code = luna.pp:PatchStr(code, pos, e, "math."..fn.."("..obj..")")
+					code = luna.pp:PatchStr(code, pos, e, "math::"..fn.."("..obj..")")
 				elseif (string[fn]) then
-					code = luna.pp:PatchStr(code, pos, e, "string."..fn.."("..obj..")")
+					code = luna.pp:PatchStr(code, pos, e, "string::"..fn.."("..obj..")")
 				elseif (table[fn]) then
-					code = luna.pp:PatchStr(code, pos, e, "table."..fn.."("..obj..")")
+					code = luna.pp:PatchStr(code, pos, e, "table::"..fn.."("..obj..")")
 				end
 			end
 		end
@@ -116,13 +98,13 @@ luna.pp:AddProcessor("special_funcs", function(code)
 	-- [[any string]].any_method
 	code = code:gsub("%[%[([^%z\n]+)%]%]%.([%w_]+)[%(%s]?([^%z\n]*)([%)\n])", function(a, b, c, d)
 		c = c:trim()
-		return "string."..b.."([["..a.."]]"..((c and c != "") and ", "..c or "")..")"..(d != ")" and d or "")
+		return "string::"..b.."([["..a.."]]"..((c and c != "") and ", "..c or "")..")"..(d != ")" and d or "")
 	end)
 
 	-- 123.any_method
 	--                digit         func            args     ending
 	code = code:gsub("([%-]?[%d]+)%.([%w_]+)[%(%s]?([^%z\n]*)([%)\n])", function(a, b, c, d)
-		return "math."..b.."("..a..((c and c != "") and ", "..c or "")..")"..(d != ")" and d or "")
+		return "math::"..b.."("..a..((c and c != "") and ", "..c or "")..")"..(d != ")" and d or "")
 	end)
 
 	-- a.any_method!
