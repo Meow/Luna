@@ -36,17 +36,21 @@ func bar(a = 100, b)
 end
 
 class MyClass
+  func MyClass
+    print 'class constructor called'
+    this.init
+  end
+
   func test_member(a, b)
     print 'test member'
   end
 
   func init
-    print 'init call'
+    this
   end
 end
 
-// todo: get rid of :
-testing = MyClass.new
+testing = new MyClass
 testing.test_member
 testing.init
 

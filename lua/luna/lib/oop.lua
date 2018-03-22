@@ -13,11 +13,7 @@ do
       setmetatable(nobj, o)
       table.safe_merge(nobj, o)
       if o["#1"] then
-        local s, v = pcall(o["#1"], nobj, ...)
-        if !s then
-          ErrorNoHalt("[#1] Class constructor has failed to run!\n")
-          ErrorNoHalt(v.."\n")
-        end
+        o["#1"](nobj, ...)
       end
       nobj.IsValid = function(ob) return true end
       nobj.valid = nobj.IsValid
@@ -27,7 +23,7 @@ do
     base_class = nil
   }
   _G["#1"] = _class
-  #3
+#3
 end
 ]]
 
@@ -55,11 +51,7 @@ do
         end
       end
       if o["#1"] then
-        local s, v = pcall(o["#1"], nobj, ...)
-        if (!s) then
-          ErrorNoHalt("[#1] Class constructor has failed to run!\n")
-          ErrorNoHalt(v.."\n")
-        end
+        o["#1"](nobj, ...)
       end
       nobj.IsValid = function(ob) return true end
       nobj.valid = nobj.IsValid
@@ -79,9 +71,11 @@ do
       end
     end
     _class = merged
+  else
+    ErrorNoHalt("#2 is not a valid class!\n")
   end
   _G["#1"] = _class
-  #3
+#3
 end
 ]]
 
@@ -94,11 +88,7 @@ do
       setmetatable(nobj, o)
       table.safe_merge(nobj, o)
       if o["#1"] then
-        local s, v = pcall(o["#1"], nobj, ...)
-        if (!s) then
-          ErrorNoHalt("[#1] Class constructor has failed to run!\n")
-          ErrorNoHalt(v.."\n")
-        end
+        o["#1"](nobj, ...)
       end
       local bc = o.base_class
       local has_bc = true
@@ -133,9 +123,11 @@ do
       end
     end
     _class = merged
+  else
+    ErrorNoHalt("#2 is not a valid class!\n")
   end
   _G["#1"] = _class
-  #3
+#3
 end
 ]]
 
@@ -143,7 +135,7 @@ local function process_definition(code)
   local s, e, classname = code:find("class%s+([%w_]+)")
 
   while (s) do
-    if (code:sub(s - 1, s - 1) != "_") then
+    if (s - 1 == 0 or code:sub(s - 1, s - 1):match("[%s\n]")) then
       line = code:sub(e + 1, code:find("\n", e + 1)):trim():trim("\n")
 
       if (#line <= 0) then line = classname end
@@ -167,7 +159,7 @@ local function process_definition(code)
           local base_class_name = line:sub(line:find(extend_char) + 1, #line)
           local class_code = extend_regular and class_base_extend or class_base_extend_reverse
 
-          code_block:gsub("function%s+([%w_]+)", "function "..class_name..":%1")
+          code_block = code_block:gsub("function%s+([%w_]+)", "function "..class_name..":%1")
           class_code = class_code:gsub("#1", class_name):gsub("#2", base_class_name):gsub("#3", code_block)
           
           code = luna.pp:PatchStr(code, s, real_end, class_code)
@@ -176,7 +168,6 @@ local function process_definition(code)
           local class_code = class_base
 
           code_block = code_block:gsub("function%s+([%w_]+)", "function "..class_name..":%1")
-
           class_code = class_code:gsub("#1", class_name):gsub("#3", code_block)
 
           code = luna.pp:PatchStr(code, s, real_end, class_code)
@@ -193,12 +184,15 @@ local function process_definition(code)
 end
 
 local function process_instantiation(code)
-  return code
+  return code:gsub("new%s+([%w_]+)", "%1:new")
 end
 
 luna.pp:AddProcessor("oop", function(code)
+  code = save_strings(code)
+  code = code:gsub("this%.", "self."):gsub("this:", "self:"):gsub("([%s\n]?)this([%s\n]?)", "%1self%2")
   code = process_definition(code)
   code = process_instantiation(code)
+  code = restore_strings(code)
 
   return code
 end)
