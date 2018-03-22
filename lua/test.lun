@@ -33,11 +33,15 @@ func bar(a = 100, b)
   b = 321
 end
 
-class Test
+class MyClass
   func test_member
-
+    print 'dicks'
   end
 end
+
+// todo: get rid of :
+testing = MyClass:new()
+testing:test_member()
 
 bar 101, fn
   print 'shite'

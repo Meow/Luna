@@ -26,8 +26,7 @@ do
     class_name = "#1",
     base_class = nil
   }
-  _G["#1"] = _G["#1"] or {}
-  setmetatable(_G["#1"], _class)
+  _G["#1"] = _class
   #3
 end
 ]]
@@ -81,8 +80,7 @@ do
     end
     _class = merged
   end
-  _G["#1"] = _G["#1"] or {}
-  setmetatable(_G["#1"], _class)
+  _G["#1"] = _class
   #3
 end
 ]]
@@ -136,8 +134,7 @@ do
     end
     _class = merged
   end
-  _G["#1"] = _G["#1"] or {}
-  setmetatable(_G["#1"], _class)
+  _G["#1"] = _class
   #3
 end
 ]]
@@ -146,41 +143,48 @@ local function process_definition(code)
   local s, e, classname = code:find("class%s+([%w_]+)")
 
   while (s) do
-    line = code:sub(e + 1, code:find("\n", e + 1)):trim():trim("\n")
+    if (code:sub(s - 1, s - 1) != "_") then
+      line = code:sub(e + 1, code:find("\n", e + 1)):trim():trim("\n")
 
-    if (#line <= 0) then line = classname end
+      if (#line <= 0) then line = classname end
 
-    if (line and #line > 0) then
-      local class_end, real_end = luna.util.FindLogicClosure(code, e, 1)
+      if (line and #line > 0) then
+        local class_end, real_end = luna.util.FindLogicClosure(code, e, 1)
 
-      if (!real_end) then
-        parser_error("'end' not found for class", s, ERROR_CRITICAL)
+        if (!real_end) then
+          parser_error("'end' not found for class", s, ERROR_CRITICAL)
 
-        return code
-      end
+          return code
+        end
 
-      local code_block = code:sub(code:find("\n", e + 1) + 1, class_end - 1)
+        local code_block = code:sub(code:find("\n", e + 1) + 1, class_end - 1)
 
-      -- class extended
-      if (line:find("<") or line:find(">")) then
-        local extend_regular = line:find("<")
-        local extend_char = extend_regular and "<" or ">"
-        local class_name = line:sub(1, line:find(extend_char) - 1)
-        local base_class_name = line:sub(line:find(extend_char) + 1, #line)
-        local class_code = extend_regular and class_base_extend or class_base_extend_reverse
+        -- class extended
+        if (line:find("<") or line:find(">")) then
+          local extend_regular = line:find("<")
+          local extend_char = extend_regular and "<" or ">"
+          local class_name = line:sub(1, line:find(extend_char) - 1)
+          local base_class_name = line:sub(line:find(extend_char) + 1, #line)
+          local class_code = extend_regular and class_base_extend or class_base_extend_reverse
 
-        code_block:gsub("function%s+([%w_]+)", "function "..class_name..":%1")
-        class_code = class_code:gsub("#1", class_name):gsub("#2", base_class_name):gsub("#3", code_block)
-        
-        code = luna.pp:PatchStr(code, s, real_end, class_code)
-      else -- regular class
-        local class_name = line:trim():gsub("\n", "")
-        local class_code = class_base
+          code_block:gsub("function%s+([%w_]+)", "function "..class_name..":%1")
+          class_code = class_code:gsub("#1", class_name):gsub("#2", base_class_name):gsub("#3", code_block)
+          
+          code = luna.pp:PatchStr(code, s, real_end, class_code)
+        else -- regular class
+          local class_name = line:trim():gsub("\n", "")
+          local class_code = class_base
 
-        code_block:gsub("function%s+([%w_]+)", "function "..class_name..":%1")
-        class_code = class_code:gsub("#1", class_name):gsub("#3", code_block)
+          code_block = code_block:gsub("function%s+([%w_]+)", "function "..class_name..":%1")
 
-        code = luna.pp:PatchStr(code, s, real_end, class_code)
+          MsgC(code_block.."\n", COLOR_RED)
+
+          class_code = class_code:gsub("#1", class_name):gsub("#3", code_block)
+
+          code = luna.pp:PatchStr(code, s, real_end, class_code)
+        end
+
+        e = real_end
       end
     end
 
