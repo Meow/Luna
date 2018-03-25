@@ -428,7 +428,7 @@ function read_obj_backwards(code, pos)
     end
 
     if (v == "\"" or v == "'" or v == "]" and code[i - 1] == "]") then
-      local open, close = read_string(code, i)
+      local open, close = read_string_backwards(code, i)
 
       if (close) then
         ignore_until_pos = close

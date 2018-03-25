@@ -14,6 +14,10 @@ function __is_a(a, b)
 	return string.lower(type(a)) == b
 end
 
+function isnil(a)
+	return a == nil
+end
+
 local special_funcs = {
 	["to_s"] = "tostring",
 	["to_n"] = "tonumber",
@@ -23,11 +27,13 @@ local special_funcs = {
 	["is_n"] = "isnumber",
 	["is_t"] = "istable",
 	["is_f"] = "isfunction",
+	["is_nil"] = "isnil",
 	["str?"] = "isstring",
 	["bool?"] = "isbool",
 	["num?"] = "isnumber",
 	["tab?"] = "istable",
 	["func?"] = "isfunction",
+	["nil?"] = "isnil",
 	["presence"] = "__check_presence"
 }
 
@@ -46,7 +52,6 @@ local function check_obj(a, b)
 end
 
 luna.pp:AddProcessor("special_funcs", function(code)
-	-- No arguments
 	local s, e, fn = code:find("%.([%w_%?!]+)")
 
 	while (s) do
@@ -54,6 +59,11 @@ luna.pp:AddProcessor("special_funcs", function(code)
 
 		if (!rest_of_line:starts("=")) then
 			local obj, pos = read_obj_backwards(code, s - 1)
+
+			if (obj:find("\n")) then
+				s, e, fn = code:find("%.([%w_%?!]+)", e)
+				continue
+			end
 
 			if (obj and !check_obj(obj, fn)) then
 				local args, beg, endg
@@ -92,7 +102,7 @@ luna.pp:AddProcessor("special_funcs", function(code)
 	--                string                func           args      ending
 	code = code:gsub("['\"]([^%z\n]+)['\"]%.([%w_]+)[%(%s]?([^%z\n]*)([%)\n])", function(a, b, c, d)
 		c = c:trim()
-		return "string."..b.."([["..a.."]]"..((c and c != "") and ", "..c or "")..")"..(d != ")" and d or "")
+		return "string::"..b.."([["..a.."]]"..((c and c != "") and ", "..c or "")..")"..(d != ")" and d or "")
 	end)
 
 	-- [[any string]].any_method

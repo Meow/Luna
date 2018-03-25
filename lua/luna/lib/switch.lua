@@ -16,14 +16,21 @@ luna.pp:AddProcessor("switch", function(code)
       for k, v in ipairs(lines) do
         if (v:find("case%s")) then
           local line_cond = v:match("%s*case%s*([^\n]+)")
-  
+
           if (cond_count > 0) then
             cond = cond.." || "
           end
-  
-          cond = cond.."("..condition.." == "..line_cond..")"
-          cond_count = cond_count + 1
-          lines[k] = ""
+
+          if (!line_cond:find(",")) then
+            cond = cond.."("..condition.." == "..line_cond..")"
+            cond_count = cond_count + 1
+            lines[k] = ""
+          else
+            line_cond = line_cond:gsub(",", " == "..condition.." || ").." == "..condition
+            cond = cond..line_cond
+            cond_count = cond_count + 1
+            lines[k] = ""
+          end
         elseif (cond != "") then
           if (!els) then
             lines[k - 1] = "if ("..cond..") then"

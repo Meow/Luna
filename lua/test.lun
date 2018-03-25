@@ -1,12 +1,7 @@
 test_var = 'help'
 
 switch test_var
-  case 'nothelp'
-  case 'help'
-  case 'derp'
-  case 1
-  case 2
-  case 3
+  case 'nothelp', 'help', 1, 2, 3
     print 'test test'
   case 4
   case 5
@@ -22,7 +17,7 @@ a = {
   shit: 321
 }
 
-string::sub 'a', 1, 2
+String::sub 'a', 1, 2
 
 func foo(b, *args)
   print :args.test

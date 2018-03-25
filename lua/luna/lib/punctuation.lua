@@ -41,12 +41,12 @@ luna.pp:AddProcessor("punctuation", function(code)
 
   result = result:gsub("([%w_]+)::([%w_]+)", function(a, b)
     if !_G[a] then
-      local _a = _G[string.lower(a[1])..a:sub(2, a:len())]
+      local _a = string.lower(a[1])..a:sub(2, a:len())
 
-      if _a then
+      if _G[_a] then
         a = _a
       elseif _G[string.lower(a)] then
-        a = _G[string.lower(a)]
+        a = string.lower(a)
       end
     end
 
