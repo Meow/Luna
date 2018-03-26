@@ -53,5 +53,9 @@ luna.pp:AddProcessor("string_interp", function(code)
 		end
 	end
 
+  code = save_strings(code, true)
+  code = code:gsub("this%.", "self."):gsub("this:", "self:"):gsub("([%s\n]?)this([%s\n]?)", "%1self%2")
+	code = restore_strings(code)
+
 	return code
 end)

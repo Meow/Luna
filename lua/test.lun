@@ -29,7 +29,7 @@ class DiscordLogger
   func DiscordLogger(id, token)
     this.id = id
     this.token = token
-    this.url = 'https://discordapp.com/api/webhooks/' + :this.id + '/' + :this.token
+    this.url = 'https://discordapp.com/api/webhooks/#{:this.id}/#{:this.token}'
     this.prefix = ''
   end
 
