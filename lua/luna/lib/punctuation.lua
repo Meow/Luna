@@ -48,6 +48,8 @@ local function check_nxt_safety(code, pos)
 end
 
 luna.pp:AddProcessor("punctuation", function(code)
+  code = save_strings(code, true)
+
   local lines = code:split("\n")
   local result = ""
 
@@ -98,6 +100,8 @@ luna.pp:AddProcessor("punctuation", function(code)
 
     return a.."."..b
   end)
+
+  result = restore_strings(result)
 
   return result
 end)

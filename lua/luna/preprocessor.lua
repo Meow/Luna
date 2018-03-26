@@ -491,7 +491,7 @@ hook.Add("luna_compiler_logic_fixed", "luna_read_globals", function(obj)
 					info.context_end = real_end
 
 					if (block:sub(func_end + 1, block:find("\n", func_end)):find("[%(%)]")) then
-						info.args_str = read_arguments(block, func_end + 1)
+						info.args_str = read_arguments(block, func_end + 1) or ''
 						info.args_amt = #info.args_str:split(",")
 
 						if (info.args_str:find("%*[%w_%.:]")) then
@@ -731,7 +731,12 @@ hook.Add("Lua_Preprocess", "Luna_Preprocessor", function(code, path)
 	returnBuffer = minify(returnBuffer) or returnBuffer
 
 	debug_print("Finished processing in "..math.round(CurTime() - start_time, 4).."ms.")
-	debug_print(returnBuffer)
+	
+	if (DEBUG) then
+		for k, v in ipairs(returnBuffer:split("\n")) do
+			print(k.."\t"..v)
+		end
+	end
 
 	return returnBuffer
 end)

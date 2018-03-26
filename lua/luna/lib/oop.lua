@@ -44,7 +44,7 @@ do
             ErrorNoHalt("Base class constructor has failed to run!\n"..tostring(v).."\n")
           end
         end
-        if bc.base_class and bc.class_name != bc.base_class.class_name then
+        if bc.base_class and (bc.class_name != bc.base_class.class_name) then
           bc = bc.base_class
         else
           has_bc = false
@@ -63,14 +63,14 @@ do
   local _base = _G["#2"]
   if istable(_base) then
     local copy = table.Copy(_base)
-    local merged = table.safe_merge(copy, _class)
+    table.safe_merge(copy, _class)
     if isfunction(_base.extended) then
-      local s, v = pcall(_base.extended, copy, merged)
+      local s, v = pcall(_base.extended, _base, copy)
       if !s then
         ErrorNoHalt("'extended' class hook has failed to run!\n"..tostring(v).."\n")
       end
     end
-    _class = merged
+    _class = copy
   else
     ErrorNoHalt("#2 is not a valid class!\n")
   end
@@ -99,7 +99,7 @@ do
             ErrorNoHalt("Base class constructor has failed to run!\n"..tostring(v).."\n")
           end
         end
-        if bc.base_class and bc.class_name != bc.base_class.class_name then
+        if bc.base_class and (bc.class_name != bc.base_class.class_name) then
           bc = bc.base_class
         else
           has_bc = false
@@ -115,14 +115,13 @@ do
   local _base = _G["#2"]
   if istable(_base) then
     local copy = table.Copy(_base)
-    local merged = table.safe_merge(_class, copy)
+    table.safe_merge(_class, copy)
     if isfunction(_class.extended) then
-      local s, v = pcall(_class.extended, _class, merged)
+      local s, v = pcall(_class.extended, _class, copy)
       if !s then
         ErrorNoHalt("'extended' class hook has failed to run!\n"..tostring(v).."\n")
       end
     end
-    _class = merged
   else
     ErrorNoHalt("#2 is not a valid class!\n")
   end
@@ -155,14 +154,16 @@ local function process_definition(code)
         if (line:find("<") or line:find(">")) then
           local extend_regular = line:find("<")
           local extend_char = extend_regular and "<" or ">"
-          local class_name = line:sub(1, line:find(extend_char) - 1)
-          local base_class_name = line:sub(line:find(extend_char) + 1, #line)
+          local class_name = classname
+          local base_class_name = line:sub(line:find(extend_char) + 1, #line):trim()
           local class_code = extend_regular and class_base_extend or class_base_extend_reverse
 
           code_block = code_block:gsub("function%s+([%w_]+)", "function "..class_name..":%1")
           class_code = class_code:gsub("#1", class_name):gsub("#2", base_class_name):gsub("#3", code_block)
-          
+
           code = luna.pp:PatchStr(code, s, real_end, class_code)
+
+          e = s + class_code:len()
         else -- regular class
           local class_name = line:trim():gsub("\n", "")
           local class_code = class_base
@@ -171,13 +172,13 @@ local function process_definition(code)
           class_code = class_code:gsub("#1", class_name):gsub("#3", code_block)
 
           code = luna.pp:PatchStr(code, s, real_end, class_code)
-        end
 
-        e = real_end
+          e = s + class_code:len()
+        end
       end
     end
 
-    s, e = code:find("class%s+[%w_]+", e)
+    s, e, classname = code:find("class%s+([%w_]+)", e)
   end
 
   return code

@@ -29,7 +29,7 @@ class DiscordLogger
   func DiscordLogger(id, token)
     this.id = id
     this.token = token
-    this.url = 'https://discordapp.com/api/webhooks/#{:this.id}/#{:this.token}'
+    this.url = 'https://discordapp.com/api/webhooks/#{this.id}/#{this.token}'
     this.prefix = ''
   end
 
@@ -41,6 +41,10 @@ class DiscordLogger
     http::Post this.url, {
       content: :this.prefix + msg,
     }
+  end
+
+  func amazing
+    print 'amazing function'
   end
 end
 
@@ -59,11 +63,13 @@ foo test: 'hello world ish maybe' do
   print 'test'
 end
 
-test or= {}
-
-namespace Test
-  func foo
+class NSClass < DiscordLogger
+  func test
+    print 'shit'
   end
 end
+
+test_obj = new NSClass('a', 'b')
+test_obj.amazing
 
 //include 'luna/support/support.lun'
