@@ -93,6 +93,32 @@ LUA_SPECIAL = {
 	["]"] = true
 }
 
+LUNA_BINARY_OPS = {
+	["="] = true,
+	["or="] = true,
+	["||="] = true,
+	["&&="] = true,
+	["and="] = true,
+	["+="] = true,
+	["-="] = true,
+	["/="] = true,
+	["*="] = true,
+	["&="] = true,
+	["|="] = true,
+	["%="] = true,
+	["^="] = true,
+	["..="] = true,
+	["&"] = true,
+	["|"] = true,
+	["<<"] = true,
+	[">>"] = true,
+	[">"] = true,
+	["<"] = true,
+	[">="] = true,
+	["<="] = true,
+	["=="] = true
+}
+
 local processors = {}
 
 -- returnBuffer is what is returned back to C++.

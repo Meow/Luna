@@ -1,8 +1,26 @@
+local function shoot(line, init, size, where)
+  size = size or 1
+
+  for i = init, where and 1 or line:len(), where and -1 or 1 do
+    if !line[i]:match("%s") then
+      if where then
+        return line:sub(i - size + 1, i)
+      else
+        return line:sub(i, i + size - 1)
+      end
+    end
+  end
+end
+
 local function check_safety(line, pos)
   local c, nxt, prv = line[pos], line[pos + 1], line[pos - 1]
 
   -- check if in table or otherwise shouldn't be local
   if (line:ends(",") or prv == "{") then return false end
+
+  local char = shoot(line, pos - 1, 1, true)
+
+  if (char == "{" or LUA_OP_SYMBOLS[char]) then return false end
 
   return true
 end

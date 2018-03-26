@@ -12,11 +12,6 @@ else
   print 'not test test'
 end
 
-a = {
-  key: 123,
-  shit: 321
-}
-
 String::sub 'a', 1, 2
 
 func foo(b, *args)
@@ -35,16 +30,21 @@ class DiscordLogger
     this.id = id
     this.token = token
     this.url = 'https://discordapp.com/api/webhooks/' + :this.id + '/' + :this.token
+    this.prefix = ''
+  end
+
+  func prefix(p)
+    this.prefix or= p.to_s
   end
 
   func add(msg)
     http::Post this.url, {
-      content = msg
+      content: :this.prefix + msg,
     }
   end
 end
 
-admin_logger = new DiscordLogger('123456789', 'aaaaaaaaabbbbbbbbbbbbccccccccccc')
+admin_logger = new DiscordLogger '123456789', 'aaaaaaaaabbbbbbbbbbbbccccccccccc'
 
 bar 101, fn
   print 'shite'

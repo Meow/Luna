@@ -3,6 +3,23 @@
 // Breaks your ability to simply copy-paste Lua into Luna
 //
 
+local blocked_binops = {
+	["="] = true,
+	["or="] = true,
+	["||="] = true,
+	["&&="] = true,
+	["and="] = true,
+	["+="] = true,
+	["-="] = true,
+	["/="] = true,
+	["*="] = true,
+	["&="] = true,
+	["|="] = true,
+	["%="] = true,
+	["^="] = true,
+	["..="] = true
+}
+
 local function check_nxt_safety(code, pos)
   local rdy = false
 
@@ -13,6 +30,12 @@ local function check_nxt_safety(code, pos)
     if v == "," then return false end
     if v == " " then rdy = true continue end
     if (!rdy) then continue end
+
+    for k, v in pairs(blocked_binops) do
+      if code:sub(i, i + k:len() - 1) == k then
+        return false
+      end
+    end
 
     if v:match("%w") then return true end
   
