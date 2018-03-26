@@ -131,13 +131,13 @@ end
 ]]
 
 local function process_definition(code)
-  local s, e, classname = code:find("class%s+([%w_]+)")
+  local s, e, class_name = code:find("class%s+([%w_]+)")
 
   while (s) do
     if (s - 1 == 0 or code:sub(s - 1, s - 1):match("[%s\n]")) then
       line = code:sub(e + 1, code:find("\n", e + 1)):trim():trim("\n")
 
-      if (#line <= 0) then line = classname end
+      if (#line <= 0) then line = class_name end
 
       if (line and #line > 0) then
         local class_end, real_end = luna.util.FindLogicClosure(code, e, 1)
@@ -149,28 +149,64 @@ local function process_definition(code)
         end
 
         local code_block = code:sub(code:find("\n", e + 1) + 1, class_end - 1)
+        code_block = code_block:gsub("function%s+([%w_]+)", "function "..class_name..":%1")
+
+        -- Context-aware member assignment
+        local function_contexts = {}
+        local strt, fnend, fn_name = code_block:find("function%s+([%w_]+)")
+
+        while (strt) do
+          local func_end, real_func_end = luna.util.FindLogicClosure(code, fnend, 1)
+
+          if (real_func_end) then
+            table.insert(function_contexts, {strt, real_func_end})
+          else
+            parser_error("'end' not found for function!", strt, ERROR_CRITICAL)
+
+            return code
+          end
+
+          strt, fnend, fn_name = code_block:find("function%s+([%w_]+)", real_func_end or fnend)
+        end
+
+        local _check_ctx = function(pos)
+          for k, v in ipairs(function_contexts) do
+            if pos >= v[1] and pos <= v[2] then
+              return true
+            end
+          end
+
+          return false
+        end
+
+        local lcstrt, lcend, lc_name = code_block:find("local%s+([%w_]+)")
+
+        while (lcstrt) do
+          if (!_check_ctx(lcstrt)) then
+            local newname = class_name.."."..lc_name
+
+            code_block = luna.pp:PatchStr(code_block, lcstrt, lcend, newname)
+            lcend = lcstrt + newname:len()
+          end
+
+          lcstrt, lcend, lc_name = code_block:find("local%s+([%w_]+)", lcend)
+        end
 
         -- class extended
         if (line:find("<") or line:find(">")) then
           local extend_regular = line:find("<")
           local extend_char = extend_regular and "<" or ">"
-          local class_name = classname
           local base_class_name = line:sub(line:find(extend_char) + 1, #line):trim()
           local class_code = extend_regular and class_base_extend or class_base_extend_reverse
 
-          code_block = code_block:gsub("function%s+([%w_]+)", "function "..class_name..":%1")
           class_code = class_code:gsub("#1", class_name):gsub("#2", base_class_name):gsub("#3", code_block)
-
           code = luna.pp:PatchStr(code, s, real_end, class_code)
 
           e = s + class_code:len()
         else -- regular class
-          local class_name = line:trim():gsub("\n", "")
           local class_code = class_base
 
-          code_block = code_block:gsub("function%s+([%w_]+)", "function "..class_name..":%1")
           class_code = class_code:gsub("#1", class_name):gsub("#3", code_block)
-
           code = luna.pp:PatchStr(code, s, real_end, class_code)
 
           e = s + class_code:len()
@@ -178,7 +214,7 @@ local function process_definition(code)
       end
     end
 
-    s, e, classname = code:find("class%s+([%w_]+)", e)
+    s, e, class_name = code:find("class%s+([%w_]+)", e)
   end
 
   return code

@@ -26,6 +26,8 @@ func bar(a = 100, b)
 end
 
 class DiscordLogger
+  member_var = 123
+
   func DiscordLogger(id, token)
     this.id = id or ''
     this.token = token or ''
@@ -60,6 +62,7 @@ dangerous!
 boolean?
 
 admin_logger = new DiscordLogger '123456789', 'aaaaaaaaabbbbbbbbbbbbccccccccccc'
+print :admin_logger.member_var
 
 bar 101, fn
   print 'hey hay :D'

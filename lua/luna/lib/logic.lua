@@ -15,7 +15,7 @@ local function fix_bracket_argumented_call(code, bracket_start)
 
   if (arg_str) then
     for k, v in ipairs(blocked_arg_strings) do
-      if (arg_str:find("[^%w]?"..string.pattern_safe(v).."[^%w]") or arg_str == v) then
+      if (arg_str:find("[^%w_]"..string.pattern_safe(v).."[^%w_]") or arg_str == v) then
         return code
       end
     end
