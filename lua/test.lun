@@ -1,15 +1,15 @@
 test_var = 'help'
 
 switch test_var
-  case 'nothelp', 'help', 1, 2, 3
-    print 'test test'
-  case 4
-  case 5
-    print 'derp'
-  case false
-    print 'true'
-  else
-    print 'not test test'
+case 'nothelp', 'help', 1, 2, 3
+  print 'test test'
+case 4
+case 5
+  print 'derp'
+case false
+  print 'true'
+else
+  print 'not test test'
 end
 
 a = {
@@ -30,24 +30,21 @@ func bar(a = 100, b)
   b = 321
 end
 
-class MyClass
-  func MyClass
-    print 'class constructor called'
-    this.init
+class DiscordLogger
+  func DiscordLogger(id, token)
+    this.id = id
+    this.token = token
+    this.url = 'https://discordapp.com/api/webhooks/' + :this.id + '/' + :this.token
   end
 
-  func test_member(a, b)
-    print 'test member'
-  end
-
-  func init
-    this
+  func add(msg)
+    http::Post this.url, {
+      content = msg
+    }
   end
 end
 
-testing = new MyClass
-testing.test_member
-testing.init
+admin_logger = new DiscordLogger('123456789', 'aaaaaaaaabbbbbbbbbbbbccccccccccc')
 
 bar 101, fn
   print 'shite'

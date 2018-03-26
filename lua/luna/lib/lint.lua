@@ -77,7 +77,7 @@ function linter.check(code)
   end
 end
 
-linter.add_check("Commas", LINT_WARNING, function(code)
+linter.add_check("Commas", LINT_MINOR, function(code)
   local lines = code:split("\n")
 
   for k, v in ipairs(lines) do
@@ -99,7 +99,7 @@ linter.add_check("Commas", LINT_WARNING, function(code)
   end
 end)
 
-linter.add_check("Spaces", LINT_WARNING, function(code)
+linter.add_check("Spaces", LINT_MINOR, function(code)
   local lines = code:split("\n")
 
   for k, v in ipairs(lines) do

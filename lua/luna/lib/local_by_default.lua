@@ -1,3 +1,12 @@
+local function check_safety(line, pos)
+  local c, nxt, prv = line[pos], line[pos + 1], line[pos - 1]
+
+  -- check if in table or otherwise shouldn't be local
+  if (line:ends(",") or prv == "{") then return false end
+
+  return true
+end
+
 luna.pp:AddProcessor("local_by_default", function(code)
   local contexts = luna.pp:GetContexts(code)
   local locals = {}
@@ -46,7 +55,7 @@ luna.pp:AddProcessor("local_by_default", function(code)
         for k, v in ipairs(vars_table) do
           v = v:trim()
 
-          if (!new_locals[v] and !_G[v] and !LUA_OPERATORS[v]) then
+          if (!new_locals[v] and !_G[v] and !LUA_OPERATORS[v] and check_safety(line, s)) then
             should_place_local_sign = true
             new_locals[v] = v
           end

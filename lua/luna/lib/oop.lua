@@ -188,7 +188,7 @@ local function process_instantiation(code)
 end
 
 luna.pp:AddProcessor("oop", function(code)
-  code = save_strings(code)
+  code = save_strings(code, true)
   code = code:gsub("this%.", "self."):gsub("this:", "self:"):gsub("([%s\n]?)this([%s\n]?)", "%1self%2")
   code = process_definition(code)
   code = process_instantiation(code)

@@ -323,7 +323,7 @@
     <!-- Important constants -->
     <dict>
       <key>match</key>
-      <string>(?&lt;![^.]\.|:)\b(NULL|false|yes|no|nil|true|_G|_R|_VERSION|self|this|math\.(pi|huge))\b|(?&lt;![.])\.{3}(?!\.)</string>
+      <string>(?&lt;![^.]\.|:)\b(NULL|false|yes|no|nil|true|_G|_R|_VERSION|[:]?self|[:]?this|math\.(pi|huge))\b|(?&lt;![.])\.{3}(?!\.)</string>
       <key>name</key>
       <string>constant.language.luna</string>
     </dict>
@@ -424,7 +424,7 @@
           <array>
             <dict>
               <key>include</key>
-              <string>$self|this</string>
+              <string>$self</string>
             </dict>
           </array>
         </dict>

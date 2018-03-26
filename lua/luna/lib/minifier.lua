@@ -34,7 +34,11 @@ local removable = {
 local strings_storage = {}
 
 -- stolen from string interp code lmao
-function save_strings(code)
+function save_strings(code, auto_sanitize)
+  if (auto_sanitize) then
+    code = sanitize_strings(code)
+  end
+
   local str_open, open_char, close_char, close_seq, open_seq, open_pos = false, "", "", "", "", -1
   local i, si = 0, 0
   local skip = 0

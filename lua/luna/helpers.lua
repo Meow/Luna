@@ -1,3 +1,17 @@
+function printc(color, ...)
+  local pieces = {...}
+
+  for k, v in ipairs(pieces) do
+    MsgC(v, color)
+
+    if (k < #pieces) then
+      MsgC("\t", color)
+    end
+  end
+
+  MsgC("\n", color)
+end
+
 function is_next_statement(code, what, pos)
   local i = pos
 

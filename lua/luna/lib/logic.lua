@@ -6,7 +6,8 @@ local blocked_characters = {
   ["{"] = true, ["}"] = true, ["("] = true,
   [")"] = true, ["["] = true, ["]"] = true,
   ["."] = true, [","] = true, ["/"] = true,
-  ["&"] = true, ["|"] = true, [":"] = true
+  ["&"] = true, ["|"] = true, [":"] = true,
+  ["})"] = true
 }
 
 local function fix_bracket_argumented_call(code, bracket_start)
@@ -19,7 +20,7 @@ local function fix_bracket_argumented_call(code, bracket_start)
       end
     end
 
-    if (arg_str:len() == 1 and blocked_characters[arg_str]) then
+    if (blocked_characters[arg_str] or !arg_str:find("[%w_]")) then
       return code
     end
 
@@ -152,7 +153,7 @@ local function return_implicit(code)
           end
 
           break
-        elseif (!line:find("[^%w]end") and line != "end" and !line:find("=[^=]") and i != 1) then
+        elseif (!line:find("[^%w]end") and line != "end" and !line:find("=[^=]") and !line:find("[}%)]") and i != 1) then
           lines[i] = line:gsub("([%s]*)([^%z]+)%s*", "%1return %2")
 
           break

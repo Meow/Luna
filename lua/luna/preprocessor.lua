@@ -615,10 +615,14 @@ local function get_all_strings(code)
 end
 
 local function strip_comments(code)
+	code = save_strings(code)
+
 	code = code:gsub("/%*[^%*%/]+*/", "")
 	code = code:gsub("%-%-%[%[[^%]]+%]%]", "")
 	code = code:gsub("//[^\n]+", "")
 	code = code:gsub("%-%-[^\n]+", "")
+
+	code = restore_strings(code)
 
 	return code
 end
