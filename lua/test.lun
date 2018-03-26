@@ -27,8 +27,8 @@ end
 
 class DiscordLogger
   func DiscordLogger(id, token)
-    this.id = id
-    this.token = token
+    this.id = id or ''
+    this.token = token or ''
     this.url = 'https://discordapp.com/api/webhooks/#{this.id}/#{this.token}'
     this.prefix = ''
   end
@@ -69,7 +69,7 @@ class NSClass < DiscordLogger
   end
 end
 
-test_obj = new NSClass('a', 'b')
+test_obj = new NSClass 'a', 'b'
 test_obj.amazing
 
 //include 'luna/support/support.lun'
