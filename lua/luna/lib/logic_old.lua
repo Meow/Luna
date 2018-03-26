@@ -323,7 +323,7 @@ luna.pp:AddProcessor("logic", function(code)
 	code = code:gsub("->", ":")
 
 	// ! calls a function with no arguments.
-	code = code:gsub("([%w_]+)[!]+([%s\n%)])","%1()%2")
+	code = code:gsub("([%w_]+)[!]+([%s\n%)])","%1__dng%2")
 
 	// ? in function names
 	code = code:gsub("([%w_]+)[?]+([%s\n%()])","%1__bool%2")

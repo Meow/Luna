@@ -69,6 +69,7 @@ local function fix_brackets(code)
   -- Argument-less function call
   -- a?
   code = code:gsub("([%w_]+)__bool([%s\n])", "%1__bool()%2")
+  code = code:gsub("([%w_]+)__dng([%s\n])", "%1__dng()%2")
 
   -- a.b / AWFUL HOTFIX
   code = code:gsub("([%w_]+)%.([%w_]+)%s+([^%z\n%s]*)", function(a, b, c)
@@ -171,7 +172,8 @@ local function return_implicit(code)
 end
 
 luna.pp:AddProcessor("logic", function(code)
-  // ? in function names
+  // ? and ! in function names
+  code = code:gsub("([%w_]+)[!]+([%s\n%)])","%1__dng%2")
   code = code:gsub("([%w_]+)[?]+([%s\n%()])","%1__bool%2")
   code = save_strings(code)
 

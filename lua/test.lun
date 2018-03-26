@@ -48,10 +48,21 @@ class DiscordLogger
   end
 end
 
+func dangerous!
+  print 'i am dangerous, rawr'
+end
+
+func boolean?
+  print 'i return booleans!'
+end
+
+dangerous!
+boolean?
+
 admin_logger = new DiscordLogger '123456789', 'aaaaaaaaabbbbbbbbbbbbccccccccccc'
 
 bar 101, fn
-  print 'shite'
+  print 'hey hay :D'
 end
 
 test = 'hello'
@@ -65,7 +76,7 @@ end
 
 class NSClass < DiscordLogger
   func test
-    print 'shit'
+    print 'D:'
   end
 end
 

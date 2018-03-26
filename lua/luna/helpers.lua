@@ -124,6 +124,11 @@ function read_arguments(code, begin, read_expressions, read_special)
   local started = false
   local skip = 0
 
+  -- edge case: newline is the first symbol we read
+  if (code[begin] == "\n") then
+    return false
+  end
+
   while (true) do
     if (i >= code:len()) then break end
 
