@@ -286,7 +286,7 @@
     <!-- Control keywords -->
     <dict>
       <key>match</key>
-      <string>\b(break|do|fn|else|for|if|switch|case|unless|is|is\snot|elseif|elif|elsif|return|then|repeat|while|until|end|function|namespace|class|new|glob|global|public|private|protected|let|local|in|continue|yield|goto|or=|and=)\b</string>
+      <string>\b(break|do|fn|else|for|if|switch|case|unless|is|is\snot|elseif|elif|elsif|return|then|repeat|while|until|end|function|namespace|class|new|glob|global|public|private|protected|let|local|in|continue|yield|super|goto|or=|and=)\b</string>
       <key>name</key>
       <string>keyword.control.luna</string>
     </dict>

@@ -78,8 +78,8 @@ foo test: 'hello world ish maybe' do
 end
 
 class NSClass < DiscordLogger
-  func test
-    print 'D:'
+  func amazing
+    super
   end
 end
 

@@ -149,36 +149,42 @@ local function process_definition(code)
         end
 
         local code_block = code:sub(code:find("\n", e + 1) + 1, class_end - 1)
-        code_block = code_block:gsub("function%s+([%w_]+)", "function "..class_name..":%1")
 
         -- Context-aware member assignment
         local function_contexts = {}
-        local strt, fnend, fn_name = code_block:find("function%s+([%w_]+)")
 
-        while (strt) do
-          local func_end, real_func_end = luna.util.FindLogicClosure(code, fnend, 1)
+        local function _find_func_ctx()
+          function_contexts = {}
+          local strt, fnend, fn_name = code_block:find("function%s+([%w_]+)")
 
-          if (real_func_end) then
-            table.insert(function_contexts, {strt, real_func_end})
-          else
-            parser_error("'end' not found for function!", strt, ERROR_CRITICAL)
+          while (strt) do
+            local func_end, real_func_end = luna.util.FindLogicClosure(code, fnend, 1)
 
-            return code
+            if (real_func_end) then
+              table.insert(function_contexts, {strt, real_func_end, fn_name})
+            else
+              parser_error("'end' not found for function!", strt, ERROR_CRITICAL)
+
+              return code
+            end
+
+            strt, fnend, fn_name = code_block:find("function%s+([%w_]+)", real_func_end)
           end
-
-          strt, fnend, fn_name = code_block:find("function%s+([%w_]+)", real_func_end or fnend)
         end
 
         local _check_ctx = function(pos)
           for k, v in ipairs(function_contexts) do
             if pos >= v[1] and pos <= v[2] then
-              return true
+              return v
             end
           end
 
           return false
         end
 
+        _find_func_ctx()
+
+        -- Locals should be class members
         local lcstrt, lcend, lc_name = code_block:find("local%s+([%w_]+)")
 
         while (lcstrt) do
@@ -191,6 +197,28 @@ local function process_definition(code)
 
           lcstrt, lcend, lc_name = code_block:find("local%s+([%w_]+)", lcend)
         end
+
+        _find_func_ctx()
+
+        -- super
+        local supstrt, supend, arg_list = code_block:find("super([^\n]*)")
+
+        while (supstrt) do
+          local fnctx = _check_ctx(supstrt)
+
+          if (fnctx and code_block[supend + 1]:match("[%s%(]") and code_block[supstrt - 1]:match("[^%w_]")) then
+            arg_list = arg_list:trim()
+            local newcond = "pcall((self.base_class or {})."..fnctx[3].." and (self.base_class or {})."..fnctx[3]..", self"..(#arg_list > 0 and ", "..arg_list or "")..")"
+
+            code_block = luna.pp:PatchStr(code_block, supstrt, supend, newcond)
+            supend = supstrt + newcond:len()
+          end
+
+          supstrt, supend, arg_list = code_block:find("super([^\n]*)", supend)
+        end
+
+        -- member functions
+        code_block = code_block:gsub("function%s+([%w_]+)", "function "..class_name..":%1")
 
         -- class extended
         if (line:find("<") or line:find(">")) then
