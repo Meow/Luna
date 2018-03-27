@@ -62,10 +62,37 @@ foo = 'world'
 SOME_GLOBAL_VAR = 123 // Assuming this variable exists in _G table
 ```
 
+### Default Lua tables are treated differently
+Due to the way Luna's OOP works, to interact with Lua tables the way you'd expect, you need to use the ```::``` operator. It acts just like ```.``` in regular Lua, but since Luna uses ```.``` to call class members, we could not keep using it for table indexing.
+```
+String::sub
+Math::random
+net::Start
+http::Post
+```
+```lua
+string.sub
+math.random
+net.Start
+http.Post
+```
+
+Alternatively, in some cases where you do not want your variable called, you can prefix it with ```:```, which means "treat as variable".
+```
+player.some_var
+:player.some_var
+```
+```lua
+player:some_var()
+player.some_var
+```
+
+Please note that this should only be used where something is being indexed. If you just have a regular variable, it won't work on it.
+
 ### Parentheses are optional
 Putting parentheses in the function calls is optional in most cases. There are some edge scenarios where this might still be necessary, but generally you don't need to do that anymore
 ```
-my_string = string.gsub 'hello world', 'hello', 'hi'
+my_string = String::gsub 'hello world', 'hello', 'hi'
 ```
 Will get pre-processed into
 ```lua
@@ -100,7 +127,7 @@ end
 The characters ```!``` and ```?``` are now also valid characters in the function names.
 ```
 func this_returns_bool?
-  return false
+  false
 end
 
 func dangerous_func!
@@ -205,7 +232,7 @@ for k, v in pairs({1, 2, 3}) do ... end
 ### String interpolation
 Luna supports string interpolation.
 ```
-my_string = 'This is an #{string.upper 'amazing'} string!'
+my_string = 'This is an #{String::upper 'amazing'} string!'
 ```
 ```lua
 local my_string = 'This is an '..(string.upper('amazing'))..' string!'
@@ -217,7 +244,7 @@ String interpolation is supported by all of the types of strings, including the 
 Splat arguments can be imagined as varargs that aren't required to be at the end of the function definition.
 ```
 func foo(*args)
-  print args.bar
+  print :args.bar
 
   args.each k, v do
     print k, v
@@ -244,7 +271,7 @@ This is also valid with splat arguments:
 ```
 func foo(a, *args, b)
   print a
-  print args.bar
+  print :args.bar
   print b
 end
 
@@ -364,7 +391,7 @@ if !(my_var != 'error') then return false end
 ### Anonymous functions
 There is a shorthand way to define anonymous functions
 ```
-fn() print 'test' end
+fn print 'test' end
 fn(a, b, c) print a, b, c end
 ```
 ```lua
@@ -376,8 +403,9 @@ function(a, b, c) print(a, b, c) end
 Just like a lot of other languages, Luna features the ```switch``` conditions.
 ```
 switch some_condition
-case 'string'
+case 'string', 'strang'
   ...
+case 321
 case 123
   ...
 case false
@@ -387,9 +415,9 @@ else
 end
 ```
 ```lua
-if (some_condition == 'string') then
+if (some_condition == 'string' or some_condition == 'strang') then
   ...
-elseif (some_condition == 123) then
+elseif (some_condition == 321 or some_condition == 12) then
   ...
 elseif (some_condition == false) then
   ...
@@ -397,6 +425,150 @@ else
   ... -- default case
 end
 ```
+
+### Classes and object-oriented programming (OOP)
+Luna features an implementation of OOP. Since it's compiled into Lua, it won't be nearly as feature-rich as other languages and will be limited to Lua's abilities.
+
+**Luna compiles class code into absolute, utter garbage, and for that reason the examples of the compiled code will only be provided for method calls and definitions.**
+
+Basic class:
+```
+class MyClass
+
+end
+```
+
+Let's make a constructor
+```
+class MyClass
+  func MyClass
+    print 'I am a class constructor!'
+  end
+end
+```
+```lua
+function MyClass:MyClass()
+  print('I am a class constructor!')
+end
+```
+
+How about some member variables
+```
+class MyClass
+  some_var = 123
+
+  func MyClass
+    print 'I am a class constructor!'
+  end
+end
+```
+```lua
+MyClass.some_var = 123
+
+function MyClass:MyClass()
+  print('I am a class constructor!')
+end
+```
+
+Let's make some member function
+```
+class MyClass
+  some_var = 123
+
+  func MyClass
+    print 'I am a class constructor!'
+  end
+
+  func init
+
+  end
+end
+```
+```lua
+MyClass.some_var = 123
+
+function MyClass:MyClass()
+  print('I am a class constructor!')
+end
+
+function MyClass:init()
+
+end
+```
+
+Now let's use our class for something! To do that, we can either use a ```new``` keyword, or just call the ```Class#new``` method.
+```
+obj1 = new MyClass
+obj2 = MyClass.new
+
+obj1.init
+```
+```lua
+obj1 = MyClass:new()
+obj2 = MyClass:new()
+
+obj1:init()
+```
+
+### Class inheritance
+In the previous section we created a ```MyClass``` class, now let's try to extend it! To do that we can either use ```<``` token for classic inheritance, or ```>``` for reverse-inheritance. If that sounds confusing to you, don't worry, we will explain what it is soon enough.
+
+#### Classic inheritance
+```
+class Foo < MyClass
+
+end
+```
+
+Now let's override the ```init``` member of the base class.
+```
+class Foo < MyClass
+  func init
+
+  end
+end
+```
+```lua
+function Foo:init()
+
+end
+```
+
+The ```Foo#init``` method will not be doing anything right now. Let's say we add some code to it, but we also want to call the base class function. To do that we can simply use the ```super``` keyword, which calls a member of the base class with the same name as the member it was called in. Sounds complicated, but it isn't!
+```
+class Foo < MyClass
+  func init
+    print 'Foo#init'
+
+    super
+  end
+end
+```
+```lua
+function Foo:init()
+  print("Foo#init")
+
+  pcall((self.base_class or {}).init or function() end, self)
+end
+```
+
+It can also be called with arguments, just like any other function.
+
+#### Reverse-inheritance
+Now that we've covered the regular old inheritance, let's learn something new. Consider the code from the previous example, except where the ```<``` token is replaced with ```>```:
+```
+class Foo > MyClass
+  func init
+    print 'Foo#init'
+
+    super
+  end
+end
+```
+
+With reverse inheritance, this member will do only what the base class member is doing. Reverse inheritance is a kind of inheritance, where the newly created class is a class that would have been if the base class was derived from it. In other words, it initializes new class first, and then copies the base class onto it, rather than the other way around.
+
+This is useful when you want to add onto a class without overwriting it's members at all.
 
 ## More features are being developed. Check back later.
 
