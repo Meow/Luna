@@ -79,6 +79,8 @@ end
 
 class NSClass < DiscordLogger
   func amazing
+    print 'this function is amazing'
+
     super
   end
 end

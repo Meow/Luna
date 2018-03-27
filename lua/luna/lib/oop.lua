@@ -60,22 +60,22 @@ do
     class_name = "#1",
     base_class = _G["#2"]
   }
+  _G["#1"] = _class
+#3
   local _base = _G["#2"]
   if istable(_base) then
     local copy = table.Copy(_base)
-    table.safe_merge(copy, _class)
+    table.safe_merge(copy, _G["#1"])
     if isfunction(_base.extended) then
       local s, v = pcall(_base.extended, _base, copy)
       if !s then
         ErrorNoHalt("'extended' class hook has failed to run!\n"..tostring(v).."\n")
       end
     end
-    _class = copy
+    _G["#1"] = copy
   else
     ErrorNoHalt("#2 is not a valid class!\n")
   end
-  _G["#1"] = _class
-#3
 end
 ]]
 
@@ -112,12 +112,14 @@ do
     class_name = "#1",
     base_class = _G["#2"]
   }
+  _G["#1"] = _class
+#3
   local _base = _G["#2"]
   if istable(_base) then
     local copy = table.Copy(_base)
-    table.safe_merge(_class, copy)
-    if isfunction(_class.extended) then
-      local s, v = pcall(_class.extended, _class, copy)
+    table.safe_merge(_G["#1"], copy)
+    if isfunction(_G["#1"].extended) then
+      local s, v = pcall(_G["#1"].extended, _G["#1"], copy)
       if !s then
         ErrorNoHalt("'extended' class hook has failed to run!\n"..tostring(v).."\n")
       end
@@ -125,8 +127,6 @@ do
   else
     ErrorNoHalt("#2 is not a valid class!\n")
   end
-  _G["#1"] = _class
-#3
 end
 ]]
 
