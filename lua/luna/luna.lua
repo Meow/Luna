@@ -2,9 +2,23 @@ luna = luna or {}
 luna.pp = luna.pp or {}
 luna.util = luna.util or {}
 
+require('luna')
+
+LUNA_VERSION = LUNA_VERSION or '0.0.1'
+
 -- temporary
 setenv = setenv or function() end
-getenv = getenv or function(k) if (k == "LUNA_REALM") then return "sv" elseif (k == "LUNA_ENV") then return "development" else return "" end end
+getenv = getenv or function(k)
+  if (k == "LUNA_REALM") then
+    return "sv"
+  elseif (k == "LUNA_ENV") then
+    return "development"
+  else
+    return ""
+  end
+end
+
+DEBUG = (getenv("LUNA_ENV") == "development")
 
 function luna.util.FindClosure(str, opener, closer, start, opnd, chk)
   chk = chk or function() return end
@@ -104,3 +118,62 @@ function table.safe_merge(to, from)
 end
 
 include("preprocessor.lua")
+include("lib/packager.lua")
+
+print("Processing currently active gamemode...")
+
+local gm = engine.ActiveGamemode()
+local base = "gamemodes/" + gm + "/"
+local app_folder, gm_folder = base + "app/", base + "gamemode/"
+local cl_init, init = app_folder + "src/client.lun", app_folder + "src/server.lun"
+
+if (!file.Exists(init, "GAME") or !file.Exists(cl_init, "GAME")) then
+  ErrorNoHalt("No Luna sources found for the current gamemode, aborting...")
+
+  return
+end
+
+fileio.Write(gm_folder..'init.lua', '-- If you are seeing this, your gamemode likely failed to compile.\nCheck console for details!\n')
+fileio.Write(gm_folder..'cl_init.lua', '-- If you are seeing this, your gamemode likely failed to compile.\nCheck console for details!\n')
+
+packager.exclude(gm_folder)
+packager.exclude(base.."Packages")
+packager.exclude(base..gm..".txt")
+
+LUNA_PROJECT_FOLDER = 'addons/luna/'
+LUNA_APP_FOLDER = 'addons/luna/lua/luna/'
+
+production = !DEBUG
+development = DEBUG
+
+local support_filename = '.luna/'..LUNA_VERSION..'/base/support.lua'
+local lpm_filename = '.luna/'..LUNA_VERSION..'/base/package_manager.lua'
+
+packager.set_search_path("LUA")
+fileio.MakeDirectory('lua/.luna/'..LUNA_VERSION..'/base')
+fileio.Write('lua/' + support_filename, packager.pack("luna/support/", "support.lun"))
+fileio.Write('lua/' + lpm_filename, packager.pack("lpm/", "lpm.lun"))
+packager.set_search_path("GAME")
+
+function luna_load()
+  if file.Exists(support_filename, "LUA") then
+    include(support_filename)
+  else
+    error("Unable to find Luna support package, something may have gone terribly wrong!\n")
+  end
+
+  LUNA_PROJECT_FOLDER = base
+  LUNA_APP_FOLDER = app_folder
+
+  local start_time = os.clock()
+
+  fileio.Write(gm_folder + "init.lua", packager.pack(base, 'app/src/server.lun', 'sv'))
+  fileio.Write(gm_folder + "cl_init.lua", packager.pack(base, 'app/src/client.lun', 'cl'))
+
+  print("Pre-processed Luna sources!")
+  print("Compiled in "..math.round(os.clock() - start_time, 4).." second(s).")
+end
+
+luna_load()
+
+concommand.Add("luna_reload", luna_load)

@@ -52,6 +52,12 @@ local function fix_brackets(code)
   -- a:b
   code = code:gsub("([%w_%.]+):([%w_]+)%s*\n", "%1:%2()\n")
 
+  -- yield block
+  code = code:gsub("([^:])([_]?)yield([\n%s])", "%1%2yield()%3")
+
+  -- yield block cleanup
+  code = code:gsub("([:])([_]?)yield([\n%s])", "%2yield()%3")
+
   -- Function definition
   code = code:gsub("function ([%w_%.]+)([%s\n])", "function %1()%2")
 
@@ -164,6 +170,21 @@ local function return_implicit(code)
       end
     end
 
+    -- single literal, probably want to return that
+    for k, line in ipairs(lines) do
+      if (!line:find("return")) then
+        local trimmed = line:trim()
+
+        if tonumber(trimmed) then
+          lines[k] = line:gsub("(%d+)", "return %1")
+        elseif trimmed:match("(['\"][^'\"\n]+['\"])") then
+          lines[k] = line:gsub("(['\"][^'\"\n]+['\"])", "return %1")
+        elseif trimmed == "false" or trimmed == "true" then
+          lines[k] = line:gsub("true", "return true"):gsub("false", "return false")
+        end
+      end
+    end
+
     code = luna.pp:PatchStr(code, v[2], v[3], table.concat(lines, "\n"))
     luna.pp:OffsetContexts(v[3], code:len() - orig_len)
   end
@@ -193,7 +214,7 @@ luna.pp:AddProcessor("logic", function(code)
     self.code = new or self.code
   end}
 
-  hook.Call("luna_compiler_logic_fixed", cobj)
+  hook.Run("luna_compiler_logic_fixed", cobj)
 
   code = cobj.code
 

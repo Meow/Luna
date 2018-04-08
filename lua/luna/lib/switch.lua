@@ -1,5 +1,5 @@
 luna.pp:AddProcessor("switch", function(code)
-  local switch_pattern = "switch%s*%(?%s*([%w_+%.:]+)%s*%)?%s*\n"
+  local switch_pattern = "switch%s*%(?%s*([%w_+%.:%[%]]+)%s*%)?%s*\n"
   local s, e, condition = code:find(switch_pattern)
 
   while (s) do

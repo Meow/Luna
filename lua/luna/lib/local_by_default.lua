@@ -61,7 +61,7 @@ luna.pp:AddProcessor("local_by_default", function(code)
     -- Quick and dirty global keyword check. Yes, I know it's not required to be at the beginning of the statement.
     -- Let's call this an 'unintended feature'...
     if (!line:find("global[%s%(]+") and !line:find("glob[%s%(]+") and !line:find("local%s+")) then
-      local s, e, vars = line:find("([%w_,%.]+)%s-=[^=]")
+      local s, e, vars = line:find("([%w_,%.%s]+)%s-=[^=]")
 
       if (s and !vars:find("function") and !vars:find("%.")) then
         local vars_table = vars:split(",")

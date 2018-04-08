@@ -20,10 +20,21 @@ local function parse_yield(code, obj)
         args_str = luna.pp:PatchStr(args_str, i, i, ",_yield,")
   
         break
+      elseif (!obj.splattable and v == "." and obj.is_vararg) then
+        local va_str, va_end = args_str:find("%.%.%.")
+
+        args_str = luna.pp:PatchStr(args_str, va_str, va_end, "_yield,...")
+
+        break
+      elseif (obj.splattable and v == "(") then
+        args_str = luna.pp:PatchStr(args_str, i, i, "(_yield,")
+  
+        break
       end
     end
 
-    block = luna.pp:PatchStr(block, s, e-1, args_str)
+    block = luna.pp:PatchStr(block, s, e - 1, args_str)
+
     code = luna.pp:PatchStr(code, obj.context_start, obj.context_end, block)
   end
 
@@ -31,11 +42,11 @@ local function parse_yield(code, obj)
 end
 
 local function process_yield(code, obj)
-  local s, e = code:find(obj.name.."[%s%(]")
+  local s, e, _chr = code:find(obj.name.."([%s%(])")
 
   while (s) do
     if (s >= obj.context_start and s <= obj.context_end) then
-      s, e = code:find(obj.name.."[%s%(]", e)
+      s, e, _chr = code:find(obj.name.."([%s%(])", e)
 
       continue
     end
@@ -96,6 +107,12 @@ local function process_yield(code, obj)
             end
 
             break
+          elseif (obj.splattable and obj.splat_pos == 0) then
+            local l_str, l_end, l_chr = line:find(obj.name.."([%s%(])")
+            
+            line = luna.pp:PatchStr(line, l_end, l_end, l_chr + "__yield_block,")
+
+            break
           end
         end
 
@@ -104,7 +121,7 @@ local function process_yield(code, obj)
       end
     end
 
-    s, e = code:find(obj.name.."[%s%(]", e)
+    s, e, _chr = code:find(obj.name.."([%s%(])", e)
   end
 
   return code
@@ -130,7 +147,7 @@ local function parse_splat(code, obj)
     -- beginning of arg list
     if (block:match("%(%s*%*")) then
       obj.splat_pos = 0
-      obj.end_args = #(block:sub(block:find("%(%s*%*"), block:find("%)") - 1):split(",") or {}) - 1
+      obj.end_args = #(block:sub(block:find("[%(%s]*%*"), block:find("%)") - 1):split(",") or {}) - 1
     elseif (block:match(",%s*%*[%w_]+%s*,")) then -- middle
       obj.splat_pos = 1
 
@@ -191,7 +208,7 @@ local function process_splat(code, obj)
       end
 
       local exploded = args:split(",")
-      local rs, re = obj.start_args or 0, obj.end_args or 0
+      local rs, re = obj.start_args or 0, (obj.end_args or 1) - 1
       local _rs, _re, _spt = {}, {}, {}
       local i = 0
 

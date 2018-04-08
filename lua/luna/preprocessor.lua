@@ -4,6 +4,8 @@
 	written with readability or any plans to change it in mind.
 --]]
 
+local spam_debug_info = false
+
 -- Globals used during processing
 _SCOPE = {}
 _GLOBALS = {}
@@ -39,7 +41,9 @@ LUA_OPERATORS = {
 	["true"] = true,
 	["false"] = true,
 	["nil"] = true,
-	["function"] = true
+	["function"] = true,
+	["not"] = true,
+	["in"] = true
 }
 
 LUA_LITERALS = {
@@ -412,7 +416,7 @@ hook.Add("luna_compiler_logic_fixed", "luna_read_globals", function(obj)
 	while (s) do
 		local context_end, real_end = luna.util.FindLogicClosure(code, e, 1)
 
-		if (context_end) then
+		if (context_end and real_end) then
 			local info = {
 				type = "function",
 				is_func = true,
@@ -455,6 +459,7 @@ hook.Add("luna_compiler_logic_fixed", "luna_read_globals", function(obj)
 			_GLOBALS[fn] = info
 		else
 			parser_error("'end' expected to close function!", s, ERROR_CRITICAL)
+
 			break
 		end
 
@@ -496,6 +501,10 @@ hook.Add("luna_compiler_logic_fixed", "luna_read_globals", function(obj)
 
 						if (info.args_str:find("%*[%w_%.:]")) then
 							info.splattable = true
+						end
+
+						if (info.args_str:find("%.%.%.")) then
+							info.is_vararg = true
 						end
 					end
 
@@ -653,8 +662,6 @@ local function strip_comments(code)
 	return code
 end
 
-local DEBUG = (getenv("LUNA_ENV") == "development")
-
 local function minify(code)
 	if (!DEBUG) then
 		return luna.minifier:Minify(code, DEBUG)
@@ -662,17 +669,20 @@ local function minify(code)
 end
 
 local function debug_print(msg)
-	if (DEBUG) then
+	if (spam_debug_info) then
 		print(msg)
 	end
 end
 
-hook.Add("Lua_Preprocess", "Luna_Preprocessor", function(code, path)
+hook.Add("Lua_Preprocess", "Luna_Preprocessor", function(code, path, context)
 	if (!path:find(".lun")) then
 		return code
 	end
 
-	linter.check(code)
+	-- Do not lint in prod
+	if (DEBUG) then
+		linter.check(code)
+	end
 
 	_SCOPE = {}
 	_LOCALS = {}
@@ -727,12 +737,9 @@ hook.Add("Lua_Preprocess", "Luna_Preprocessor", function(code, path)
 		end
 	end
 
-	-- Alright we can minify this damned thing now...
-	returnBuffer = minify(returnBuffer) or returnBuffer
-
 	debug_print("Finished processing in "..math.round(CurTime() - start_time, 4).."ms.")
 	
-	if (DEBUG) then
+	if (spam_debug_info) then
 		for k, v in ipairs(returnBuffer:split("\n")) do
 			print(k.."\t"..v)
 		end

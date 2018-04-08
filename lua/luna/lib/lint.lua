@@ -59,23 +59,36 @@ function linter.check(code)
     v.callback(code)
   end
 
-  MsgC("Linter done!", #linter.errors > 0 and COLOR_YELLOW or COLOR_GREEN)
+  MsgC(#linter.errors > 0 and COLOR_YELLOW or COLOR_GREEN, "Linter done!")
 
   if (#linter.errors > 0) then
-    MsgC(" ]:C\n", COLOR_YELLOW)
+    MsgC(COLOR_YELLOW, " ]:C\n")
 
     for k, v in ipairs(linter.errors) do
-      MsgC(v.module..": "..v.msg.."\n", color_match[v.urgency])
+      MsgC(color_match[v.urgency], v.module..": "..v.msg.."\n")
 
       if (v.where) then
-        MsgC(v.snippet.."\n", COLOR_LIGHT_GREY)
-        MsgC(string.rep("-", (v.where > 42 and v.where - 7 or v.where - 2))..(v.where > 42 and " HERE ^ " or " ^ HERE ")..string.rep("-", 48 - v.where).."\n", COLOR_WHITE)
+        MsgC(COLOR_LIGHT_GREY, v.snippet.."\n")
+        MsgC(COLOR_WHITE, string.rep("-", (v.where > 42 and v.where - 7 or v.where - 2))..(v.where > 42 and " HERE ^ " or " ^ HERE ")..string.rep("-", 48 - v.where).."\n")
       end
     end
   else
-    MsgC("\nAll good ^_^\n", COLOR_GREEN)
+    MsgC(COLOR_GREEN, "\nAll good ^_^\n")
   end
 end
+
+linter.add_check("Varargs", LINT_ERROR, function(code)
+  local lines = code:split("\n")
+
+  for k, v in ipairs(lines) do
+    local s, e = v:find("%.%.%.")
+
+    while e and e <= v:len() do
+      linter.push_error("Line "..k.." - Varargs are only supported as splat arguments!", v, s)
+      s, e = v:find("%.%.%.", e + 1)
+    end
+  end
+end)
 
 linter.add_check("Commas", LINT_MINOR, function(code)
   local lines = code:split("\n")

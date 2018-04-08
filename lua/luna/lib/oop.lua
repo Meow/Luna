@@ -208,7 +208,7 @@ local function process_definition(code)
 
           if (fnctx and code_block[supend + 1]:match("[%s%(]") and code_block[supstrt - 1]:match("[^%w_]")) then
             arg_list = arg_list:trim()
-            local newcond = "pcall((self.base_class or {})."..fnctx[3].." and (self.base_class or {})."..fnctx[3]..", self"..(#arg_list > 0 and ", "..arg_list or "")..")"
+            local newcond = "pcall((self.base_class or {})."..fnctx[3].." or function() end, self"..(#arg_list > 0 and ", "..arg_list or "")..")"
 
             code_block = luna.pp:PatchStr(code_block, supstrt, supend, newcond)
             supend = supstrt + newcond:len()

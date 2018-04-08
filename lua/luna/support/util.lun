@@ -1,0 +1,17 @@
+func group(*args)
+  args.each k, v do
+    return if not v
+  end
+
+  yield
+end
+
+func compare(a, b)
+  if a < b
+    0
+  elif a > b
+    1
+  else
+    2
+  end
+end
