@@ -1,54 +1,27 @@
-# Luna-Parser
-Luna language parser. Compiles Luna sources to Lua.
+# Luna
+An easy programming language that compiles to Lua.
 
-Luna is an alternative syntax for the Lua language. This version of the parser is specifically designed for Garry's Mod.
+Luna is a programming language designed to be easy to read, code and generally elegant. While it can be used with general Lua programming, it was designed to be used with Garry's Mod specifically.
 
-Luna features tons of syntax changes over the original Lua to make it easier for programmers to write code. The goal of the project is to lower the amount of typing that needs to be done by the coder, as well as provide convenient and easy-to-read syntax.
+It features tons of syntax changes over the original Lua to make it easier for programmers to code. The goal of the project is to lower the amount of typing that needs to be done by the coder, as well as provide convenient and easy-to-read syntax.
 
 Luna is heavily inspired by Ruby, but also takes certain features from JS, C# and C++.
 
 # Installation
-Luna relies on something calling the ```Lua_Preprocess``` hook via either Garry's Mod's hooks system or Luna's implementation of it. So just drop the project somewhere and include the init.lua file. Note that it overwrites and aliases certain build-in GMod functions and that this parser doesn't feature anything that calls the preprocessor hook.
+As of right now, Luna does not have any convenient way to parse files. In the future, there will be a simple ```luna_parse``` function that will output the parsed code, which can then be written to a file or otherwise fed to the Lua interpreter. Note that it overwrites and aliases certain build-in GMod functions and that this parser doesn't feature anything that calls the preprocessor hook.
 
 # Syntax documentation
-Luna supports writing Lua code directly and it should (in most cases) be nicely ignored and untouched by the parser. Some code might not be compatible, the only real way to know for sure if your Lua code will be ignored by the Luna parser is to just drop it there and see if it works.
-
 Here is a (non-comprehensive) list of what is new, in no particular order:
-### The language is indentation-sensitive
-Before I say anything else, I need to point out that the language relies on proper indentation of the document. You don't need to use some specific indentation, the only requirement is for you to be consistent. A lot of Luna's features may break if your indentation is inconsistent and the compiler will warn you against that.
 
-Your indentation must be at least one space or one tab. Two spaces are used in the examples, as this is the convention that Luna follows.
-
-### New assignment operators
-```
-+= -= *= /= %= or= and= &&= ||= &= |= ^= ..=
-```
-
-Also the ```++``` operator. ```--``` was not implemented due to overlapping Lua's comments.
-
-### Bitwise operators
-```
-| & << >>
-```
-
-### Operator aliases
-The following tokens were aliased:
-```
-func       -> function
-elif/elsif -> elseif
-yes/no     -> true/false
-is         -> ==
-is not     -> !=
-```
+### The language is sensitive to newlines
+While it's common sense for a lot of programmers, Luna doesn't like when the code is written in a single row. To avoid bugs and errors, it is recommended to use proper newlines and indentation, even though the latter is completely ignored by the parser.
 
 ### Variables are local by default
-All of the variables are local by default, which means that you don't need to specify the ```local``` keyword anymore. If the variable is found in the global table, it will be treated as global, unless explicitly marked local.
+All of the variables are local by default, which means that the ```local``` keyword doesn't need to be specified anymore. If the variable is a member of any table, it will be treated as if that table already exists. Functions are treated as locals too, unless explicitly marked global. Variables that exist in ```_G``` table will be detected and treated as globals.
 
-Functions are always treated as globals unless explicitly marked local.
-
-The ```global``` (or ```glob```) keyword allows you to explicitly declare the variable as global.
+The ```@``` token allows variables to be explicitly declared as globals.
 ```
-global var = true
+@var = true
 test = 123
 foo = 'hello!'
 foo = 'world'
@@ -62,8 +35,115 @@ foo = 'world'
 SOME_GLOBAL_VAR = 123 // Assuming this variable exists in _G table
 ```
 
+### Assignment operators
+Just like a lot of other programming languages, Luna features standard math operators, as well as assignment operators.
+```
+= += -= *= /= %= or= and= &&= ||= &= |= ^= ..=
+```
+
+### Bitwise operators
+Bitwise operators follow the same principle as those in C++. The ```bit.``` library needs to be installed in order for it to work (included by default in Garry's Mod).
+```
+| & << >>
+```
+
+### Functions
+In Luna, a lot of original Lua tokens were replaced by other, shorter, variations of them. Please note that Lua keywords **cannot** be written in Luna files anymore.
+
+Here is an example of a basic function definition that takes no arguments:
+```
+func foo
+
+end
+```
+
+As can be seen, parentheses do not need to be put after the function name if the function does not take any arguments. However, it is still required to put them if there are arguments.
+
+### Logic
+Logical statements have a little bit different syntax than Lua. ```then``` does not exist in the syntax anymore, ```elseif``` is renamed into ```elsif``` (notice the lack of 'e' after the 's'), just like Ruby.
+```
+if condition
+  ...
+elsif other_condition
+  ...
+else
+  ...
+end
+```
+
+```unless``` token is also supported as an alternative to ```if```. It has the opposite meaning of ```if```.
+```
+unless condition
+  ...
+end
+```
+The code block will only be executed if ```condition``` evaluates to false.
+
+### Strings
+Strings can no longer be defined using the ```[[ ]]``` syntax, instead it's all on the ```'``` and ```"``` style quotes. The single quote strings do not support string interpolation and can not be multi-line. Double-quote strings support a lot more features. Here is an example of a multi-line string in Luna:
+```
+my_string = "Hello,
+I am an amazing multi-line string with #{string_interpolation_name}!"
+other_string = 'Hello,\nI am a regular string'
+```
+
+### Ternary Operators
+Luna supports the ```? :``` ternary operator:
+```
+foo = condition ? 'Condition is true' : 'Condition is false'
+```
+```lua
+local foo = (condition and 'Condition is true' or 'Condition is false')
+```
+
+It supports being nested inside other ternary operators.
+
+### Magic operator
+```%``` followed by any letter(s) acts as a magic operator. Magic operators have vastly different behaviors depending on their implementation, and can be defined directly from Luna at some later point in time. Here is an example of a built-in magic operator, which is similar to Ruby:
+```
+%w[Apples Bananas Vegetables]
+```
+```lua
+{"Apples", "Bananas", "Vegetables"}
+```
+
+### Logical blocks can be used in assignments
+Luna will simply assign the return value of the logical block to the variable:
+```
+foo = if condition
+  'yes'
+else
+  'no'
+end
+```
+```lua
+local foo = (function()
+  if condition then
+    return 'yes'
+  else
+    return 'no'
+  end
+end)()
+```
+
+```switch``` statements can also be used in assignments, as well as do-end blocks.
+
+### Assignment can be used within the logical conditions
+If assignment is used inside of the logical condition, it is evaluated prior to the logical block and it's value is passed to the actual condition.
+```
+if foo = 123
+  print foo
+end
+```
+```lua
+local foo = 123
+if foo then
+  print(foo)
+end
+```
+
 ### Default Lua tables are treated differently
-Due to the way Luna's OOP works, to interact with Lua tables the way you'd expect, you need to use the ```::``` operator. It acts just like ```.``` in regular Lua, but since Luna uses ```.``` to call class members, we could not keep using it for table indexing.
+Due to the way Luna's OOP works, to interact with Lua tables the way you would expect, the ```::``` operator needs to be used. It acts just like ```.``` in regular Lua, but since Luna uses ```.``` to call class members, we could not keep using it for table indexing.
 ```
 String::sub
 Math::random
@@ -77,7 +157,7 @@ net.Start
 http.Post
 ```
 
-Alternatively, in some cases where you do not want your variable called, you can prefix it with ```:```, which means "treat as variable".
+Alternatively, in some cases where calling the variable is not desired, it can be prefixed with ```:```, which means "treat as variable".
 ```
 player.some_var
 :player.some_var
@@ -87,28 +167,15 @@ player:some_var()
 player.some_var
 ```
 
-Please note that this should only be used where something is being indexed. If you just have a regular variable, it won't work on it.
+Please note that this should only be used where something is being indexed. If it is just a regular variable, this won't work on it.
 
 ### Parentheses are optional
-Putting parentheses in the function calls is optional in most cases. There are some edge scenarios where this might still be necessary, but generally you don't need to do that anymore
+Putting parentheses in the function calls is optional in most cases. There are some edge scenarios where this might still be necessary, but generally it is not required anymore.
 ```
 my_string = String::gsub 'hello world', 'hello', 'hi'
 ```
-Will get pre-processed into
 ```lua
 local my_string = string.gsub('hello world', 'hello', 'hi')
-```
-
-They are also optional in the function definitions, if the function does not take any arguments
-```
-func my_func
-  print 'hello world'
-end
-```
-```lua
-function my_func()
-  print('hello world')
-end
 ```
 
 ### Function definitions
@@ -135,17 +202,17 @@ func dangerous_func!
 end
 ```
 ```lua
-function this_returns_bool__bool()
+function this_returns_bool_b()
   return false
 end
 
-function dangerous_func__excl()
+function dangerous_func_d()
   return do_something_dangerous()
 end
 ```
 
 ### Shorthand way to make tables
-You can assign table keys to variables using the ```:``` operator, instead of ```=```.
+```:``` operator can be used for table assignment, instead of ```=```.
 ```
 my_table = {
   key: 'value',
@@ -167,38 +234,6 @@ local my_table = {
     b = 'c'
   }
 }
-```
-
-### 'then' is optional in logical blocks
-```
-func foo(arg)
-  if arg == 1
-    print arg
-  end
-
-  if arg == 2
-    print arg
-  elseif arg == 3
-    print 'this number does not exist!'
-  else
-    print 'error'
-  end
-end
-```
-```lua
-function foo(arg)
-  if arg == 1 then
-    print(arg)
-  end
-
-  if arg == 2 then
-    print(arg)
-  elseif arg == 3 then
-    print('this number does not exist!')
-  else
-    print('error')
-  end
-end
 ```
 
 ### Implicit returns
@@ -227,18 +262,45 @@ string.upper('hello world')
 for k, v in pairs({1, 2, 3}) do ... end
 ```
 
-```string.``` library will be used on strings, ```math.``` on numbers. Methods that can be used on anything will be used on tables.
+### Methods can also be called on logical blocks.
+It may come as a weird feature at first, but since Luna treats almost everything as an object, it also treats the logical blocks as one:
+```
+foo = if condition
+  'yes'
+end.upper
+
+if condition
+  123
+else
+  321
+end.random
+```
+```lua
+local foo = string.upper((function()
+  if condition then
+    return 'yes'
+  end
+end)())
+
+math.random((function()
+  if condition then
+    return 123
+  else
+    return 321
+  end
+end)())
+```
 
 ### String interpolation
 Luna supports string interpolation.
 ```
-my_string = 'This is an #{String::upper 'amazing'} string!'
+my_string = "This is an #{String::upper 'amazing'} string!"
 ```
 ```lua
 local my_string = 'This is an '..(string.upper('amazing'))..' string!'
 ```
 
-String interpolation is supported by all of the types of strings, including the ```lua [[ ]]``` style.
+String interpolation is supported only by the double-quote style (```"```) strings by design.
 
 ### Splat arguments
 Splat arguments can be imagined as varargs that aren't required to be at the end of the function definition.
@@ -246,7 +308,7 @@ Splat arguments can be imagined as varargs that aren't required to be at the end
 func foo(*args)
   print :args.bar
 
-  args.each k, v do
+  args.pairs k, v do
     print k, v
   end
 end
@@ -292,7 +354,9 @@ foo(nil, nil, {['bar'] = "you don't necessarily have to provide all of the argum
 **Splat arguments are limited to one splat argument per function.**
 
 ### Yield blocks
-Yield blocks are functions / code blocks that can be executed by calling the ```yield``` special function anywhere inside of your function's body. This is, however, different from passing a function as an argument, as this method reads the first do-end block after the function call and passes it as the callback. Plus it's plain shorter to write a yield block than mess with arguments.
+Yield blocks are functions / code blocks that can be executed by calling the ```yield``` special function anywhere inside of the function's body. This is, however, different from passing a function as an argument, as this method reads the first do-end block after the function call and passes it as the callback. Plus it's plain shorter to write a yield block than mess with arguments.
+
+Also in order to accept arguments, the arguments list needs to be enclosed in ```|```, just like Ruby.
 ```
 func foo
   yield
@@ -306,7 +370,7 @@ foo do
   print 'test'
 end
 
-bar do(message)
+bar do |message|
   print message
 end
 ```
@@ -332,7 +396,7 @@ bar(__yield_block)
 Yield blocks can be mixed with splat arguments, the compiler is aware of both of them and tries to play nicely.
 
 ### Namespaces
-Namespaces is a common concept for a lot of programming languages. In Luna they are a lot like C#'s namespaces.
+Namespaces is a common concept for a lot of programming languages. In Luna they are a lot like modules, since they use Lua tables.
 ```
 namespace Test
   some_var = 'test string'
@@ -344,15 +408,16 @@ end
 
 Test.foo
 ```
-They are not using tables and simply pre-process into something like this:
+They compile into something like this:
 ```lua
-Test__some_var = 'test string'
+Test = Test or {}
+Test.some_var = 'test string'
 
-function Test__foo()
+function Test.foo()
   print('yay')
 end
 
-Test__foo()
+Test.foo()
 ```
 Namespaces can also be nested inside of each other
 ```
@@ -364,10 +429,12 @@ namespace Test
   end
 end
 
-Test.Foo.bar
+Test::Foo.bar
 ```
 ```lua
-function Test__Foo__bar()
+Test = Test or {}
+Test.Foo = Test.Foo or {}
+function Test.Foo.bar()
   print('test')
 end
 
@@ -388,6 +455,8 @@ if (my_var == 'error') then return false end
 if !(my_var != 'error') then return false end
 ```
 
+The ```is``` keyword can also be used here as an equivalent of ```==```.
+
 ### Anonymous functions
 There is a shorthand way to define anonymous functions
 ```
@@ -397,6 +466,16 @@ fn(a, b, c) print a, b, c end
 ```lua
 function() print('test') end
 function(a, b, c) print(a, b, c) end
+```
+
+Alternatively they can be defined as procs (do-end blocks):
+```
+foo = do |test| print test end
+bar = do print 'test' end
+```
+```lua
+local foo = function(test) print(test) end
+local bar = function() print('test') end
 ```
 
 ### Switches
@@ -511,7 +590,7 @@ obj1:init()
 ```
 
 ### Class inheritance
-In the previous section we created a ```MyClass``` class, now let's try to extend it! To do that we can either use ```<``` token for classic inheritance, or ```>``` for reverse-inheritance. If that sounds confusing to you, don't worry, we will explain what it is soon enough.
+In the previous section we created a ```MyClass``` class, now let's try to extend it! To do that we can either use ```<``` token for classic inheritance, or ```>``` for reverse-inheritance. If that sounds confusing, don't worry, we will explain what it is soon enough.
 
 #### Classic inheritance
 ```
@@ -568,13 +647,13 @@ end
 
 With reverse inheritance, this member will do only what the base class member is doing. Reverse inheritance is a kind of inheritance, where the newly created class is a class that would have been if the base class was derived from it. In other words, it initializes new class first, and then copies the base class onto it, rather than the other way around.
 
-This is useful when you want to add onto a class without overwriting it's members at all.
+This is useful when the programmer wants to add onto a class without overwriting it's members at all.
 
-## More features are being developed. Check back later.
+## This features list is not complete. It will be updated if I remember something that I missed.
 
 
 # Convention over Configuration
-Luna follows the CoC scheme, which means that you are expected to name your variables and function in a certain manner, as well as adhere to a certain coding standard. The convention we based our off is the standard Lua's convention, with small changes to fit modern development needs.
+Luna follows the CoC scheme, which means that the programmers are expected to name their variables and function in a certain manner, as well as adhere to a certain coding standard. The convention we based our off is the standard Lua's convention mixed with Ruby's convention, with small changes to fit modern development needs.
 
 This section will attempt to outline the main points of Luna's convention.
 
@@ -620,7 +699,7 @@ end
 
 If a function name **absolutely** requires to have two words in it, follow the local variable naming convention.
 
-If you have a table-inside-table structure, the functions should be preceeded by a colon (```:```)
+If there is a table-inside-table structure, the functions should be preceeded by a colon (```:```)
 ```
 func lib.feature:function(...)
   ...
@@ -675,7 +754,7 @@ func foo(a, b, c)
 
   b += 100
 
-  return b
+  b
 end
 ```
 
