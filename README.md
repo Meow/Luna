@@ -5,7 +5,7 @@ Luna is a programming language designed to be easy to read, code and generally e
 
 It features tons of syntax changes over the original Lua to make it easier for programmers to code. The goal of the project is to lower the amount of typing that needs to be done by the coder, as well as provide convenient and easy-to-read syntax.
 
-Luna is heavily inspired by Ruby, but also takes certain features from JS, C# and C++.
+Luna is heavily inspired by Ruby and takes a lot of features from it. It also inherits certain features from JS, C#, C++ and of course, Lua itself.
 
 # Installation
 As of right now, Luna does not have any convenient way to parse files. In the future, there will be a simple ```luna_parse``` function that will output the parsed code, which can then be written to a file or otherwise fed to the Lua interpreter. Note that it overwrites and aliases certain build-in GMod functions and that this parser doesn't feature anything that calls the preprocessor hook.
@@ -20,7 +20,7 @@ While it's common sense for a lot of programmers, Luna doesn't like when the cod
 All of the variables are local by default, which means that the ```local``` keyword doesn't need to be specified anymore. If the variable is a member of any table, it will be treated as if that table already exists. Functions are treated as locals too, unless explicitly marked global. Variables that exist in ```_G``` table will be detected and treated as globals.
 
 The ```@``` token allows variables to be explicitly declared as globals.
-```
+```c
 @var = true
 test = 123
 foo = 'hello!'
@@ -32,19 +32,51 @@ var = true
 local test = 123
 local foo = 'hello!'
 foo = 'world'
-SOME_GLOBAL_VAR = 123 // Assuming this variable exists in _G table
+SOME_GLOBAL_VAR = 123 -- Assuming this variable exists in _G table
 ```
 
 ### Assignment operators
 Just like a lot of other programming languages, Luna features standard math operators, as well as assignment operators.
-```
+```ruby
 = += -= *= /= %= or= and= &&= ||= &= |= ^= ..=
 ```
 
 ### Bitwise operators
 Bitwise operators follow the same principle as those in C++. The ```bit.``` library needs to be installed in order for it to work (included by default in Garry's Mod).
-```
+```c
 | & << >>
+```
+
+### Negation operator
+Lua's ```not``` and ```~=``` are replaced by ```!``` and ```!=```, although it is still possible to use ```not``` in Luna.
+```
+if !condition
+end
+
+if not condition
+end
+
+if condition != true
+end
+```
+```lua
+if not condition then
+end
+
+if not condition then
+end
+
+if condition ~= true then
+end
+```
+
+### Comments
+Lua's ```--``` and ```--[[ ]]``` style comments are no longer supported at all. Instead C-style comments should be used:
+```c
+// I am a single-line comment!
+/*
+  I am a multi-line comment!
+*/
 ```
 
 ### Functions
@@ -61,7 +93,7 @@ As can be seen, parentheses do not need to be put after the function name if the
 
 ### Logic
 Logical statements have a little bit different syntax than Lua. ```then``` does not exist in the syntax anymore, ```elseif``` is renamed into ```elsif``` (notice the lack of 'e' after the 's'), just like Ruby.
-```
+```ruby
 if condition
   ...
 elsif other_condition
@@ -72,7 +104,7 @@ end
 ```
 
 ```unless``` token is also supported as an alternative to ```if```. It has the opposite meaning of ```if```.
-```
+```ruby
 unless condition
   ...
 end
@@ -89,7 +121,7 @@ other_string = 'Hello,\nI am a regular string'
 
 ### Ternary Operators
 Luna supports the ```? :``` ternary operator:
-```
+```ruby
 foo = condition ? 'Condition is true' : 'Condition is false'
 ```
 ```lua
@@ -100,7 +132,7 @@ It supports being nested inside other ternary operators.
 
 ### Magic operator
 ```%``` followed by any letter(s) acts as a magic operator. Magic operators have vastly different behaviors depending on their implementation, and can be defined directly from Luna at some later point in time. Here is an example of a built-in magic operator, which is similar to Ruby:
-```
+```ruby
 %w[Apples Bananas Vegetables]
 ```
 ```lua
@@ -109,7 +141,7 @@ It supports being nested inside other ternary operators.
 
 ### Logical blocks can be used in assignments
 Luna will simply assign the return value of the logical block to the variable:
-```
+```ruby
 foo = if condition
   'yes'
 else
@@ -130,7 +162,7 @@ end)()
 
 ### Assignment can be used within the logical conditions
 If assignment is used inside of the logical condition, it is evaluated prior to the logical block and it's value is passed to the actual condition.
-```
+```ruby
 if foo = 123
   print foo
 end
@@ -171,7 +203,7 @@ Please note that this should only be used where something is being indexed. If i
 
 ### Parentheses are optional
 Putting parentheses in the function calls is optional in most cases. There are some edge scenarios where this might still be necessary, but generally it is not required anymore.
-```
+```ruby
 my_string = String::gsub 'hello world', 'hello', 'hi'
 ```
 ```lua
@@ -213,7 +245,7 @@ end
 
 ### Shorthand way to make tables
 ```:``` operator can be used for table assignment, instead of ```=```.
-```
+```ruby
 my_table = {
   key: 'value',
   foo: 123,
@@ -251,7 +283,7 @@ end
 
 ### Methods can be called on literals
 You can call certain methods directly on numbers and strings, as well as tables.
-```
+```ruby
 100.random
 'hello world'.upper
 {1, 2, 3}.each k, v do ... end
@@ -264,7 +296,7 @@ for k, v in pairs({1, 2, 3}) do ... end
 
 ### Methods can also be called on logical blocks.
 It may come as a weird feature at first, but since Luna treats almost everything as an object, it also treats the logical blocks as one:
-```
+```ruby
 foo = if condition
   'yes'
 end.upper
@@ -293,7 +325,7 @@ end)())
 
 ### String interpolation
 Luna supports string interpolation.
-```
+```ruby
 my_string = "This is an #{String::upper 'amazing'} string!"
 ```
 ```lua
@@ -443,12 +475,12 @@ Test__Foo__bar()
 
 ### Single-line logical statements
 Logical statements that only take a single line can be written like this:
-```
+```ruby
 code if/unless condition
 ```
-```
+```ruby
 return false if my_var == 'error'
-return false unless my_var != 'error' // Equivalent of above
+return false unless my_var != 'error'
 ```
 ```lua
 if (my_var == 'error') then return false end
@@ -469,7 +501,7 @@ function(a, b, c) print(a, b, c) end
 ```
 
 Alternatively they can be defined as procs (do-end blocks):
-```
+```ruby
 foo = do |test| print test end
 bar = do print 'test' end
 ```
