@@ -1,7 +1,0 @@
-global chat or= {}
-chat.add = :chat.AddText
-chat.close = :chat.Close
-chat.pos = :chat.GetChatBoxPos
-chat.size = :chat.GetChatBoxSize
-chat.open = :chat.Open
-chat.sound = :chat.PlaySound

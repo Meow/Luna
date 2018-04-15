@@ -1,7 +1,0 @@
-ent_class = FindMetaTable 'Entity'
-
-ent_class.valid = :ent_class.IsValid
-
-player_class = FindMetaTable 'Player'
-
-player_class.kill = :player_class.Kill

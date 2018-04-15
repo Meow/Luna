@@ -1,5 +1,0 @@
-include 'chat'
-include 'globals'
-include 'surface'
-include 'player'
-include 'util'
