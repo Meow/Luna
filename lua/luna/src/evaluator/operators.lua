@@ -10,7 +10,7 @@ local binops = {
 }
 
 local unops = {
-  [OP_not] = true, [OP_dec] = true, [OP_inc] = true, [OP_len] = true,
+  [TK_not] = true, [OP_dec] = true, [OP_inc] = true, [OP_len] = true,
   [OP_at] = true
 }
 

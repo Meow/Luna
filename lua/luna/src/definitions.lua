@@ -9,15 +9,6 @@ CONTEXT_OPENERS = {
   ['case'] =      true
 }
 
--- All available token types
-TK_NONE       = 0 -- Error
-TK_IDENTIFIER = 1 -- Variable names
-TK_KEYWORD    = 2 -- Language tokens
-TK_SEPARATOR  = 3 -- Punctuation characters
-TK_OPERATOR   = 4 -- Operators
-TK_LITERAL    = 5 -- Literals
-TK_COMMENT    = 6 -- Comments
-
 -- Literals (registered tokens that aren't operators)
 LUNA_LITERALS = {
   ['false'] = true, ['true'] =  true,
@@ -66,9 +57,13 @@ local function reg_op(op)
   add_keyword('OP_' + op)
 end
 
+local function reg_tk(op)
+  add_keyword('TK_' + op)
+end
+
 -- Convert most of the previously defined tokens into enums
 for k, v in pairs(LUNA_KEYWORDS) do
-  reg_op(k)
+  reg_tk(k)
 end
 
 for k, v in ipairs(operators) do
@@ -82,13 +77,27 @@ add_keyword('SLICE_OPEN')       -- [
 add_keyword('SLICE_CLOSE')      -- ]
 add_keyword('ROUND_OPEN')       -- (
 add_keyword('ROUND_CLOSE')      -- )
-add_keyword('STRAIGHT_START')   -- |
-add_keyword('STRAIGHT_END')     -- | wew
-add_keyword('GROUP_START')      -- Abstract group
-add_keyword('GROUP_END')        -- Abstract group end
+add_keyword('STRAIGHT')         -- |
+add_keyword('GROUP_START')      -- Abstract
+add_keyword('GROUP_END')        -- Abstract
 add_keyword('CALL')             -- Simply call anything
 add_keyword('CALLSELF')         -- Call method b on object a via :
 add_keyword('INDEX')            -- Fetch index b from object a via . without calling
+add_keyword('LIT_BOOL')         -- true/false
+add_keyword('LIT_STRING')       -- 'string'
+add_keyword('LIT_STRINGD')      -- "string"
+add_keyword('LIT_NUMBER')       -- 123
+add_keyword('LIT_NIL')          -- nil
+add_keyword('IDENTIFIER')       -- anything
+add_keyword('COMMENT')          -- // hello world
+add_keyword('SEP_COMMA')        -- ,
+add_keyword('SEP_DOT')          -- .
+add_keyword('SEP_COLON')        -- :
+add_keyword('SEP_SEMICOLON')    -- ;
+add_keyword('SEP_NEWLINE')      -- \n
+add_keyword('SEP_DOUBLE')       -- ::
+
+
 
 -- Match a literal string with an enumerated operator
 TOKEN_MATCH = {
@@ -101,4 +110,30 @@ TOKEN_MATCH = {
   ['>>'] = OP_brshift,  ['@'] = OP_at,      ['!='] = OP_neq,    ['*'] = OP_mul,
   ['/'] = OP_div,       ['!'] = OP_not,     ['or='] = OP_oreq,  ['||='] = OP_oreq,
   ['and='] = OP_andeq,  ['&&='] = OP_andeq
+}
+
+KEYWORD_MATCH = {
+  ['if'] = TK_if,             ['elsif'] = TK_elsif,         ['else'] = TK_else,
+  ['func'] = TK_func,         ['do'] = TK_do,               ['end'] = TK_end,
+  ['return'] = TK_return,     ['for'] = TK_for,             ['while'] = TK_while,
+  ['class'] = TK_class,       ['namespace'] = TK_namespace, ['break'] = TK_break,
+  ['continue'] = TK_continue, ['yield'] = TK_yield,         ['new'] = TK_new,
+  ['switch'] = TK_switch,     ['case'] = TK_case,           ['super'] = TK_super,
+  ['unless'] = TK_unless,     ['is'] = TK_is,               ['not'] = TK_not,
+  ['and'] = TK_and,           ['or'] = TK_or,               ['fn'] = TK_fn
+}
+
+SEPARATOR_MATCH = {
+  ['('] = ROUND_OPEN, [')'] = ROUND_CLOSE,
+  ['['] = SLICE_OPEN, [']'] = SLICE_CLOSE,
+  ['{'] = CURLY_OEPN, ['}'] = CURLY_CLOSE,
+  ['|'] = STRAIGHT,   [','] = SEP_COMMA,
+  ['.'] = SEP_DOT,    [';'] = SEP_SEMICOLON,
+  [':'] = SEP_COLON,  ['\n'] = SEP_NEWLINE
+}
+
+LITERAL_MATCH = {
+  ['nil'] = LIT_NIL,    ['true'] = LIT_BOOL,
+  ['false'] = LIT_BOOL, ['yes'] = LIT_BOOL,
+  ['no'] = LIT_BOOL
 }

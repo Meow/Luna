@@ -1,0 +1,33 @@
+// hello hello
+
+print 'test' if true
+
+test_var = 'help'
+test_num = (3.142 or 123)
+
+func test?
+  // test test
+end
+
+switch test_var
+case 'nothelp', 'help', 1, 2, 3
+  print 'test test'
+else
+  print 'not test test'
+end
+
+String::sub 'a', 1, 2
+
+func foo(b, *args)
+  print :args.test
+
+  if b
+    print !b
+  elsif c or d
+    print c
+  else
+    print b
+  end
+
+  yield
+end

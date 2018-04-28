@@ -12,4 +12,4 @@ include("includes/modules/module.lua")
 include("includes/modules/pon.lua")
 
 include("luna/luna.lua")
-include("test.lun")
+include("test_short.lun")
